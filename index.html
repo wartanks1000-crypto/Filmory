@@ -437,6 +437,19 @@ button.bb-av{border:0;color:inherit;cursor:pointer}
 .dp-foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.14)}
 .dp-foot button{background:none;border:0;color:#fff;font-weight:800;font-size:13px;padding:6px 10px;border-radius:999px;cursor:pointer}
 .dp-foot button:hover{background:rgba(255,255,255,.12)}
+/* fond de cinéma : vraies photos d'objets (claps, bobines, projecteurs…) qui dérivent derrière une vitre floue façon bulle */
+.cine-bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.cine-it{position:absolute;left:0;animation:cineMove linear infinite;will-change:transform}
+.cine-it img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 14px 22px rgba(0,0,0,.55));
+  animation:cineSway ease-in-out infinite alternate}
+@keyframes cineMove{from{transform:translateX(-30vw)}to{transform:translateX(130vw)}}
+@keyframes cineSway{from{transform:rotate(var(--r0)) translateY(-14px) scale(.96)}to{transform:rotate(var(--r1)) translateY(14px) scale(1.04)}}
+/* la vitre : flou + reflet en haut à gauche + liseré irisé, comme la bulle de messagerie */
+.cine-glass{position:absolute;inset:0;-webkit-backdrop-filter:blur(6px) saturate(1.4);backdrop-filter:blur(6px) saturate(1.4);
+  background:radial-gradient(ellipse 60% 45% at 12% 0%,rgba(255,255,255,.07),transparent 70%),radial-gradient(ellipse 50% 40% at 100% 100%,rgba(140,200,255,.06),transparent 70%),radial-gradient(ellipse 45% 35% at 0% 100%,rgba(255,170,230,.05),transparent 70%),radial-gradient(ellipse at 50% 45%,rgba(14,14,17,.25),rgba(14,14,17,.6) 95%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 0 120px rgba(120,190,255,.06)}
+@media (prefers-reduced-motion:reduce){.cine-it,.cine-it img{animation-play-state:paused}}
+html.calm .cine-it,html.calm .cine-it img{animation-play-state:paused}
 /* bulle de messagerie déplaçable */
 .chat-fab{touch-action:none;cursor:grab}
 .chat-fab.dragging{animation:none;transform:scale(1.12);cursor:grabbing;transition:none}
@@ -949,6 +962,7 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 </style>
 </head>
 <body>
+<div class="cine-bg" id="cineBg" aria-hidden="true"></div>
 
 <header class="top" id="top">
   <div class="top-in">
@@ -1404,6 +1418,7 @@ function renderAll() {
   ui.view = mm ? "membre" : VIEWS.includes(v) ? v : "accueil";
   $$("nav.tabs a").forEach(a => a.dataset.v === ui.view ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   renderMeBtn();
+  document.documentElement.classList.toggle("calm", pref("reduce", false)); // fond de cinéma figé si « Réduire les animations »
   $("#main").className = ui.view === "accueil" ? "home" : "";
   ({accueil:viewHome, parcourir:viewBrowse, watchlist:viewWatchlist, journal:viewJournal, collection:viewCollection, filmdumois:viewVote, quiz:viewQuiz, critiques:viewReviews, admin:viewAdmin, profil:viewProfile, parametres:viewSettings, amis:viewFriends, membre:viewMember, support:viewSupport, abonnement:viewPlans, statistiques:viewStats})[ui.view]();
   refreshDatalists(); onScroll();
@@ -3136,6 +3151,23 @@ async function loadDemo() {
     save("lib"); toast("Exemples chargés, marqués « exemple »"); renderAll();
   } catch { toast("TMDB ne répond pas : les exemples n'ont pas pu être chargés."); }
 }
+/* ===================== Fond de cinéma ===================== */
+// Objets entiers détourés (PNG transparents Pixabay, licence gratuite, usage commercial autorisé), hébergés dans fond/.
+(() => {
+  const OBJETS = ["clap", "camera-vintage", "pellicule-deroulee", "bobine", "projecteur", "pellicule-35mm",
+    "camera-super8", "pellicule-courte", "popcorn", "bobine-metal", "objectif", "camera-trepied"];
+  const PHOTOS = OBJETS.map(n => `fond/${n}.png`);
+  const bg = $("#cineBg"), N = innerWidth < 700 ? 9 : 20;
+  let html = "";
+  for (let i = 0; i < N; i++) {
+    const depth = Math.random(), size = 130 + depth * 220;                // 130 → 350 px
+    const r0 = Math.round(Math.random() * 50 - 25), r1 = r0 + Math.round(Math.random() * 40 - 20);
+    html += `<div class="cine-it" style="top:${(i / N * 100 - 8 + Math.random() * 8).toFixed(1)}%;width:${size | 0}px;height:${size | 0}px;opacity:${(.45 + depth * .4).toFixed(2)};animation-duration:${(110 - depth * 55).toFixed(0)}s;animation-delay:-${(Math.random() * 110).toFixed(0)}s">
+      <img alt="" decoding="async" src="${PHOTOS[i % PHOTOS.length]}" style="--r0:${r0}deg;--r1:${r1}deg;animation-duration:${(7 + Math.random() * 6).toFixed(1)}s"></div>`;
+  }
+  bg.innerHTML = html + `<div class="cine-glass"></div>`;
+})();
+
 /* ===================== Global events ===================== */
 let toastT;
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2800); }
