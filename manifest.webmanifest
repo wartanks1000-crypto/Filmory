@@ -3,11 +3,11 @@
   "short_name": "Pellicule",
   "description": "Notez vos films et séries, écrivez vos critiques, tenez votre journal et votre collection.",
   "lang": "fr",
-  "start_url": "./",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0e0e11",
   "theme_color": "#0e0e11",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]
 }
