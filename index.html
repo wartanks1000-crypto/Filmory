@@ -9,7 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon.svg"><title>Pellicule</title>
+<link rel="apple-touch-icon" href="/icon.svg">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><title>Pellicule</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap">
@@ -657,13 +658,14 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
       <a href="#parcourir" data-v="parcourir">Films &amp; séries</a>
       <a href="#journal" data-v="journal">Journal</a>
       <a href="#collection" data-v="collection">Collection</a>
+      <a href="#filmdumois" data-v="filmdumois" id="navVote" hidden>Vote</a>
 
       <a href="#critiques" data-v="critiques">Critiques</a>
     </nav>
     <label class="hsearch"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="hq" type="search" placeholder="Rechercher un film, une série…" aria-label="Rechercher"></label>
     <span class="sync" id="sync" data-s="local">Sur cet appareil</span>
     <span class="me-wrap">
-      <button class="me-btn" id="meBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="meMenu"><span class="av" id="meAv"></span><span>Mon profil</span></button>
+      <button class="me-btn" id="meBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="meMenu"><span class="av" id="meAv"></span><span id="meLbl">Mon profil</span></button>
       <div class="bubble" id="meMenu" role="menu" aria-label="Mon profil" hidden></div>
     </span>
   </div>
@@ -675,6 +677,7 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 <dialog id="dlgDetail" aria-label="Fiche du titre"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="detail"></div></dialog>
 <dialog id="dlgPoster" aria-label="Affiche en 3D"><div class="p3d" id="p3d"></div></dialog>
 <dialog id="dlgProfile" aria-label="Modifier le profil"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="pedit"></div></dialog>
+<dialog id="dlgAuth" aria-label="Compte" style="width:min(440px,calc(100vw - 24px))"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="authBox"></div></dialog>
 <dialog id="dlgPick" aria-label="Choisir un favori"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="pick"></div></dialog>
 <dialog id="dlgAdd" aria-label="Ajouter un titre"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="addForm"></div></dialog>
 <datalist id="dirList"></datalist>
@@ -692,11 +695,31 @@ const PURL = new Proxy({}, {get: (_, k) => typeof k === "string" && k.startsWith
 const tmdbCache = new Map();
 function tmdb(path, params = {}) {
   const qs = new URLSearchParams({language: "fr-FR", ...params, path}).toString();
-  if (!tmdbCache.has(qs)) tmdbCache.set(qs, fetch(`${TMDB_PROXY}?${qs}`)
-    .then(r => { if (!r.ok) throw new Error("TMDB " + r.status); return r.json(); })
-    .catch(e => { tmdbCache.delete(qs); throw e; }));
+  if (!tmdbCache.has(qs)) {
+    const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 15000);
+    tmdbCache.set(qs, fetch(`${TMDB_PROXY}?${qs}`, {signal: ctl.signal})
+      .then(async r => {
+        clearTimeout(timer);
+        const text = await r.text();
+        let data = null; try { data = JSON.parse(text); } catch {}
+        if (!r.ok || !data) { const e = new Error(data?.error || data?.status_message || text.slice(0, 120) || `HTTP ${r.status}`); e.status = r.status; throw e; }
+        return data;
+      })
+      .catch(e => { clearTimeout(timer); tmdbCache.delete(qs); throw e; }));
+  }
   return tmdbCache.get(qs);
 }
+// Explique en clair pourquoi TMDB ne répond pas
+function tmdbProblem(e) {
+  const m = String(e?.message || "");
+  if (e?.name === "AbortError") return "TMDB met trop de temps à répondre (plus de 15 secondes). Réessayez dans un instant.";
+  if (/TMDB_TOKEN/.test(m)) return "La variable TMDB_TOKEN n'est pas prise en compte par Vercel : ajoutez-la dans Settings → Environment Variables, puis faites Deployments → ⋯ → Redeploy.";
+  if (e?.status === 401) return "TMDB refuse le jeton (erreur 401). Dans Vercel, mettez dans TMDB_TOKEN le « Jeton d'accès en lecture à l'API » (le long texte qui commence par eyJ), pas la clé courte, puis redéployez.";
+  if (e?.status === 404) return "Le relais /api/tmdb est introuvable (erreur 404). Le dossier api doit être à la racine du dépôt GitHub, à côté de index.html.";
+  if (e?.status) return `Erreur ${e.status} : ${m}`;
+  return `Connexion impossible : ${m || "erreur inconnue"}`;
+}
+let homeError = "";
 const GENRES = {}, GENRES_M = {}, GENRES_T = {};
 const TITLES = {};
 const tid = (type, id) => `${type === "tv" ? "tv" : "mv"}-${id}`;
@@ -749,11 +772,14 @@ async function fetchDetails(id) {
   return applyDetails(f, d);
 }
 // Copie légère de chaque titre touché (vu, noté, favori…) : le journal, la collection et les stats marchent sans réseau
+function slimTitle(f) {
+  const {id, tmdb, t, title, year, release, img, genre, by, dirs, cast, len, eps, epMin, platform, video} = f;
+  return {id, tmdb, t, title, year, release, img, genre, by, dirs, cast: (cast || []).slice(0, 6), len, eps, epMin, platform, video, full: !!f.full};
+}
 function rememberTitle(id) {
   const f = TITLES[id]; if (!f) return;
   state.lib.meta ||= {};
-  const {tmdb, t, title, year, release, img, genre, by, dirs, cast, len, eps, epMin, platform, video} = f;
-  state.lib.meta[id] = {id, tmdb, t, title, year, release, img, genre, by, dirs, cast: (cast || []).slice(0, 6), len, eps, epMin, platform, video, full: !!f.full};
+  state.lib.meta[id] = slimTitle(f);
 }
 
 let NOW = [], NOW_SERIES = [], CLASSICS = [], SORTIES = [];
@@ -791,8 +817,11 @@ async function loadHome() {
     films.forEach(f => { const s = SORTIES.find(x => x.date === weekOf(f.release)); if (s && !s.films.includes(f) && s.films.length < 8) s.films.push(f); });
     tvUp.results.map(r => fromTmdb(r, "tv")).forEach(f => { const s = SORTIES.find(x => x.date === weekOf(f.release)); if (s && s.series.length < 6) s.series.push(f); });
     homeState = "ready";
-  } catch (e) { homeState = "error"; console.error(e); }
-  if (ui.view === "accueil") renderAll();
+  } catch (e) { homeState = "error"; homeError = tmdbProblem(e); console.error(e); }
+  if (ui.view === "accueil" || ui.view === "filmdumois") {
+    try { renderAll(); }
+    catch (e) { console.error(e); $("#main").innerHTML = `<div class="narrow" style="padding-top:60px"><div class="empty"><h3>Erreur d'affichage</h3><p></p></div></div>`; $("#main .empty p").textContent = String(e?.message || e); }
+  }
 }
 
 // Séries : épisodes et durée viennent de la fiche TMDB (10 × 45 min tant qu'elle n'est pas chargée)
@@ -865,7 +894,7 @@ const PLANS = [
   {id:"plus", name:"Cinéphile+", month:5.99, year:59.9, perks:["Tout le plan Cinéphile","Badge Cinéphile+","Toutes les couleurs exclusives, dont Nuit","Statistiques détaillées"]},
 ];
 // le créateur de la page (son propriétaire) a tous les avantages, sans abonnement
-const isCreator = () => !STANDALONE && reco.canEdit;
+const isCreator = () => auth.admin; // créateur = compte présent dans la table admins de Supabase
 const planOf = () => isCreator() ? {...PLANS[2], creator:true} : (PLANS.find(p => p.id === (state.profile.plan?.id || "free")) || PLANS[0]);
 const badgeId = () => planOf().creator ? "creator" : planOf().id;
 const planBadge = id => id === "creator" ? `<span class="plan-badge plus">Créateur</span>` : id && id !== "free" ? `<span class="plan-badge ${id}">${esc(PLANS.find(p => p.id === id)?.name || "")}</span>` : "";
@@ -915,7 +944,7 @@ function monthWinner(k = monthKey()) {
 function castVote(id) {
   const k = monthKey(), cur = myVote(k), next = cur === id ? null : id;
   if (votes.remote) {
-    if (!votes.myId) { toast("Connectez-vous à claude.ai pour voter."); return; }
+    if (!votes.myId) { openAuth(); toast("Connectez-vous pour voter."); return; }
     const mine = votes.docs.find(d => d.id === votes.myId) || {id: votes.myId};
     const {id: _drop, ...body} = mine;
     if (next) body[k] = next; else delete body[k];
@@ -1065,6 +1094,7 @@ function renderAll() {
 }
 function renderMeBtn() {
   const p = state.profile;
+  $("#meLbl").textContent = auth.sb && !auth.user ? "Se connecter" : "Mon profil";
   $("#meAv").innerHTML = p.avatar ? `<img alt="" src="${esc(p.avatar)}">` : esc(initials(p.name || viewerName || "Moi"));
 }
 function cardHTML(f, sub = "") {
@@ -1079,7 +1109,7 @@ function viewHome() {
   if (homeState !== "ready") {
     loadHome();
     $("#main").innerHTML = homeState === "error"
-      ? `<div class="narrow" style="padding-top:60px"><div class="empty"><h3>TMDB ne répond pas</h3><p>Impossible de charger les films. Vérifiez la connexion, et que la variable TMDB_TOKEN est bien définie sur Vercel.</p><button class="btn primary" data-act="retry-home">Réessayer</button></div></div>`
+      ? `<div class="narrow" style="padding-top:60px"><div class="empty"><h3>TMDB ne répond pas</h3><p>${esc(homeError || "Impossible de charger les films.")}</p><button class="btn primary" data-act="retry-home">Réessayer</button></div></div>`
       : `<div class="narrow" style="padding-top:80px"><p class="muted" style="font-size:16px">Chargement des films du moment…</p></div>`;
     return;
   }
@@ -1326,7 +1356,8 @@ function toggleMenu(force) {
     const item = (href, icon, label) => `<a role="menuitem" href="${href}" tabindex="-1">${icon}<span>${label}</span></a>`;
     menu.innerHTML = `
       <div class="bb-head"><span class="bb-av">${p.avatar ? `<img alt="" src="${esc(p.avatar)}">` : esc(initials(name))}</span>
-        <span style="min-width:0"><b>${esc(name)}</b><small>@${esc(p.handle || "cinephile")}</small></span></div>
+        <span style="min-width:0"><b>${esc(name)}</b><small>${auth.user ? esc(auth.user.email || "") : "@" + esc(p.handle || "cinephile")}</small></span></div>
+      ${auth.sb && !auth.user ? `<a role="menuitem" href="#" data-act="login" tabindex="-1">${ICON.user}<span><b>Se connecter / créer un compte</b></span></a><hr>` : ""}
       ${item("#profil", ICON.user, "Mon compte")}
       ${item("#parametres", ICON.gear, "Paramètres")}
       ${item("#statistiques", ICON.chart, "Statistiques")}
@@ -1336,7 +1367,8 @@ function toggleMenu(force) {
       <hr>
       ${item("#collection", ICON.film, "Collection")}
       ${item("#critiques", ICON.pen, "Critiques")}
-      ${item("#journal", ICON.cal, "Journal")}`;
+      ${item("#journal", ICON.cal, "Journal")}
+      ${auth.user ? `<hr><a role="menuitem" href="#" data-act="logout" tabindex="-1">${ICON.user}<span>Se déconnecter</span></a>` : ""}`;
     menu.hidden = false;
     $("[role=menuitem]", menu).focus();
   } else menu.hidden = true;
@@ -1378,8 +1410,10 @@ function viewSettings() {
   $("#main").innerHTML = `<div class="narrow" style="max-width:760px">
     <div class="view-head"><div><div class="eyebrow">Mon profil</div><h1>Paramètres</h1></div></div>
     <section class="set-card"><h2>Compte</h2>
-      <div class="set-row"><span><b>${esc(state.profile.name || viewerName || "Cinéphile")}</b><small>@${esc(state.profile.handle || "cinephile")} · ${remote ? "synchronisé avec votre compte claude.ai" : "enregistré sur cet appareil uniquement"}</small></span>
+      <div class="set-row"><span><b>${esc(state.profile.name || viewerName || "Cinéphile")}</b><small>@${esc(state.profile.handle || "cinephile")} · ${auth.user ? `connecté avec ${esc(auth.user.email || "")} · synchronisé` : "enregistré sur cet appareil uniquement"}</small></span>
         <button class="btn small" data-act="edit-profile">Modifier le profil</button></div>
+      ${auth.sb ? `<div class="set-row"><span><b>${auth.user ? "Se déconnecter" : "Créer un compte ou se connecter"}</b><small>${auth.user ? "Vos données restent enregistrées sur votre compte." : "Pour retrouver vos données sur tous vos appareils, voter et ajouter des amis."}</small></span>
+        <button class="btn small ${auth.user ? "" : "primary"}" data-act="${auth.user ? "logout" : "login"}">${auth.user ? "Se déconnecter" : "Se connecter"}</button></div>` : ""}
     </section>
     <section class="set-card"><h2>Affichage</h2>
       ${sw("reduce", "Réduire les animations", "Le DVD, le clap et le disque cassé s'affichent sans animation.", false)}
@@ -1421,7 +1455,7 @@ function viewFriends() {
   const ids = state.profile.friends, k = monthKey();
   if (!remote) {
     $("#main").innerHTML = `<div class="narrow"><div class="view-head"><div><div class="eyebrow">Mon profil</div><h1>Amis</h1></div></div>
-      <div class="empty"><h3>Amis indisponibles ici</h3><p>Les amis fonctionnent quand la page est ouverte sur claude.ai avec votre compte : vous pourrez y chercher des personnes de votre organisation et voir leur profil.</p></div></div>`;
+      <div class="empty"><h3>Connectez-vous pour ajouter des amis</h3><p>Avec un compte, vous pouvez chercher d'autres cinéphiles, voir leurs favoris, leurs statistiques et leur vote du mois.</p>${auth.sb ? `<button class="btn primary" data-act="login">Se connecter</button>` : ""}</div></div>`;
     return;
   }
   loadFriends();
@@ -1684,7 +1718,7 @@ function viewSupport() {
         <label class="lbl full">Message<textarea class="input" id="sMsg" required maxlength="2000" placeholder="Décrivez votre demande. Pour un bug : ce que vous faisiez, ce qui s'est passé, ce que vous attendiez."></textarea></label>
       </div>
       <div class="row-btns" style="justify-content:space-between;align-items:center;padding-bottom:14px">
-        <span class="note">${support.remote ? (planOf().id === "plus" ? "Cinéphile+ : votre demande sera traitée en priorité." : "Réponse affichée ici dès que le support répond.") : "Vos demandes restent sur cet appareil : ouvrez la page sur claude.ai pour qu'elles parviennent au support."}</span>
+        <span class="note">${support.remote ? (planOf().id === "plus" ? "Cinéphile+ : votre demande sera traitée en priorité." : "Réponse affichée ici dès que le support répond.") : "Connectez-vous pour que votre demande parvienne au support."}</span>
         <button class="btn primary" type="submit">Envoyer la demande</button>
       </div>
     </form>
@@ -1769,6 +1803,7 @@ function viewPlans() {
 
 /* ----- Film du mois ----- */
 function viewVote() {
+  if (homeState !== "ready") { loadHome(); $("#main").innerHTML = `<div class="narrow" style="padding-top:60px"><p class="muted">Chargement des films à l'affiche…</p></div>`; return; }
   const k = monthKey(), c = tally(k), mine = myVote(k);
   const total = Object.values(c).reduce((s,x) => s + x, 0), max = Math.max(1, ...Object.values(c), 0);
   const cands = voteCandidates().sort((a,b) => (c[b.id] || 0) - (c[a.id] || 0));
@@ -1777,7 +1812,7 @@ function viewVote() {
     .map(m => ({m, w: monthWinner(m)})).filter(x => x.w);
   $("#main").innerHTML = `<div class="narrow">
     <div class="view-head"><div><div class="eyebrow" style="text-transform:none">${monthName()} · ${total} vote${total>1?"s":""}</div><h1>Vote</h1></div></div>
-    <p class="muted" style="max-width:62ch;margin:-6px 0 26px;font-weight:600">Votez pour votre film préféré parmi ceux à l'affiche. Une voix par personne, modifiable jusqu'à la fin du mois. Le film en tête s'affiche sur la page d'accueil.${votes.remote ? "" : " Ici, votre vote reste sur cet appareil : ouvrez la page sur claude.ai pour voir ceux des autres."}</p>
+    <p class="muted" style="max-width:62ch;margin:-6px 0 26px;font-weight:600">Votez pour votre film préféré parmi ceux à l'affiche. Une voix par personne, modifiable jusqu'à la fin du mois. Le film en tête s'affiche sur la page d'accueil.${votes.remote ? "" : " Connectez-vous pour voter avec tout le monde."}</p>
     <div class="vote-grid">${cands.map(f => {
       const n = c[f.id] || 0, on = mine === f.id, lead = win && win.f.id === f.id;
       return `<div class="vcard ${on ? "mine" : ""} ${lead ? "lead" : ""}">
@@ -2562,6 +2597,8 @@ document.addEventListener("click", ev => {
   const act = a.dataset.act;
   if (act === "add-title") openAdd();
   else if (act === "demo") loadDemo();
+  else if (act === "login") { ev.preventDefault(); toggleMenu(false); openAuth("login"); }
+  else if (act === "logout") { ev.preventDefault(); logout(); }
   else if (act === "retry-home") { homeState = "idle"; renderAll(); }
   else if (act === "retry-browse") { browse.key = ""; viewBrowse(); }
   else if (act === "more-browse") loadBrowse(true);
@@ -2596,7 +2633,7 @@ $("#hq").addEventListener("input", ev => {
   ui.q = ev.target.value;
   if (ui.view !== "parcourir") { ui.type = "all"; location.hash = "parcourir"; } else viewBrowse();
 });
-$("#meBtn").onclick = ev => { ev.stopPropagation(); toggleMenu(); };
+$("#meBtn").onclick = ev => { ev.stopPropagation(); if (auth.sb && !auth.user && auth.ready) openAuth(); else toggleMenu(); };
 document.addEventListener("click", ev => { if (!ev.target.closest(".me-wrap")) toggleMenu(false); });
 document.addEventListener("keydown", ev => {
   const menu = $("#meMenu"); if (menu.hidden) return;
@@ -2613,9 +2650,184 @@ $("#dlgDetail").addEventListener("close", () => { exitTrailer(true); curId = nul
 window.addEventListener("hashchange", () => { renderAll(); window.scrollTo(0, 0); });
 window.addEventListener("scroll", onScroll, {passive:true});
 
+/* ===================== Comptes et données partagées (Supabase) ===================== */
+// Le site garde la même logique que la version claude.ai : on lui fournit un « db » et un « user »
+// qui parlent à Supabase. Clés publiques lues dans /api/config (variables Vercel) ; la sécurité vient des règles RLS.
+const auth = {sb: null, user: null, admin: false, ready: false};
+const NO_AV = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="20" fill="#2d2d35"/><circle cx="20" cy="16" r="7" fill="#9a9aa4"/><path d="M7 36c2-8 8-11 13-11s11 3 13 11" fill="#9a9aa4"/></svg>');
+const registerTitles = list => (list || []).forEach(t => { if (t?.id && !byId(t.id)) TITLES[t.id] = {...t}; });
+const titlesFor = ids => [...new Set(ids)].map(byId).filter(f => f && !f.custom).map(slimTitle);
+function sbRoute(path) {
+  let m;
+  if ((m = path.match(/^data\/users\/([^/]+)\/(profile|library)$/))) return {table: m[2] === "profile" ? "profiles" : "libraries", key: "id", id: m[1]};
+  if ((m = path.match(/^public\/(.+)$/))) return {table: "public_profiles", key: "id", id: m[1], kind: "public"};
+  if ((m = path.match(/^support\/(.+)$/))) return {table: "support_threads", key: "user_id", id: m[1], live: true};
+  if (path === "reco/list") return {table: "reco", key: "id", id: 1, kind: "reco", live: true};
+  throw new Error("Chemin inconnu : " + path);
+}
+const snapOf = (exists, data) => ({exists, data: () => data, metadata: {hasPendingWrites: false, fromCache: false}});
+let chanSeq = 0;
+function liveChannel(table, cb) {
+  return auth.sb.channel(`rt-${table}-${++chanSeq}`).on("postgres_changes", {event: "*", schema: "public", table}, cb).subscribe();
+}
+const sbDB = {
+  doc(path) {
+    const r = sbRoute(path);
+    const ref = {
+      async get() {
+        const {data, error} = await auth.sb.from(r.table).select("data").eq(r.key, r.id).maybeSingle();
+        if (error) throw {code: "unavailable", message: error.message};
+        if (data && r.kind) registerTitles(data.data?.titles);
+        return snapOf(!!data, data ? data.data : undefined);
+      },
+      async set(body) {
+        if (r.kind === "reco") body = {...body, titles: titlesFor(body.ids || [])};
+        if (r.kind === "public") body = {...body, titles: titlesFor([...(body.favFilms || []), ...(body.favSeries || []), ...(body.recent || []).map(x => x.id)])};
+        const {error} = await auth.sb.from(r.table).upsert({[r.key]: r.id, data: body, updated_at: new Date().toISOString()});
+        if (error) throw {code: "invalid_argument", message: error.message};
+      },
+      async delete() { await auth.sb.from(r.table).delete().eq(r.key, r.id); },
+      onSnapshot(next, err) {
+        let live = true;
+        const run = () => ref.get().then(s => live && next(s)).catch(e => err && err(e));
+        run();
+        const ch = r.live ? liveChannel(r.table, run) : null;
+        return () => { live = false; if (ch) auth.sb.removeChannel(ch); };
+      },
+    };
+    return ref;
+  },
+  collection(path) {
+    if (path === "votes") return {
+      onSnapshot(next, err) {
+        let live = true;
+        const run = async () => {
+          const {data, error} = await auth.sb.from("votes").select("user_id,month,title_id,title");
+          if (error) { err && err(error); return; }
+          const byUser = {};
+          (data || []).forEach(v => { (byUser[v.user_id] ||= {})[v.month] = v.title_id; if (v.title) registerTitles([v.title]); });
+          if (live) next({docs: Object.entries(byUser).map(([id, d]) => ({id, data: () => d}))});
+        };
+        run();
+        const ch = liveChannel("votes", run);
+        return () => { live = false; auth.sb.removeChannel(ch); };
+      },
+      doc(uid) {
+        return {async set(body) {
+          const k = monthKey(), id = body[k];
+          const q = id
+            ? auth.sb.from("votes").upsert({user_id: uid, month: k, title_id: id, title: byId(id) ? slimTitle(byId(id)) : null})
+            : auth.sb.from("votes").delete().match({user_id: uid, month: k});
+          const {error} = await q; if (error) throw error;
+        }};
+      },
+    };
+    if (path === "support") return {
+      onSnapshot(next, err) {
+        let live = true;
+        const run = async () => {
+          const {data, error} = await auth.sb.from("support_threads").select("user_id,data");
+          if (error) { err && err(error); return; }
+          if (live) next({docs: (data || []).map(row => ({id: row.user_id, data: () => row.data || {}}))});
+        };
+        run();
+        const ch = liveChannel("support_threads", run);
+        return () => { live = false; auth.sb.removeChannel(ch); };
+      },
+    };
+    throw new Error("Collection inconnue : " + path);
+  },
+};
+const sbUser = {
+  me: async () => ({id: auth.user.id, name: state.profile.name || (auth.user.email || "").split("@")[0], email: auth.user.email, avatarUrl: state.profile.avatar || NO_AV, color: "#9a9aa4", isOwner: auth.admin, canEdit: auth.admin}),
+  id: async () => auth.user?.id || null,
+  isOwner: async () => auth.admin,
+  canEdit: async () => auth.admin,
+  can: async () => null,
+  async profiles(ids) {
+    ids = [...new Set([].concat(ids))];
+    const out = Object.fromEntries(ids.map(id => [id, {id, name: "", avatarUrl: NO_AV}]));
+    if (!ids.length) return out;
+    const {data} = await auth.sb.from("public_profiles").select("id,data").in("id", ids);
+    (data || []).forEach(r => out[r.id] = {id: r.id, name: r.data?.name || (r.data?.handle ? "@" + r.data.handle : ""), avatarUrl: r.data?.avatar || NO_AV});
+    return out;
+  },
+  async search(q) {
+    const safe = String(q || "").replace(/[%_,().*\\]/g, " ").trim();
+    if (!safe) return [];
+    const {data} = await auth.sb.from("public_profiles").select("id,data").or(`data->>name.ilike.%${safe}%,data->>handle.ilike.%${safe}%`).limit(8);
+    return (data || []).filter(r => r.data?.name || r.data?.handle).map(r => ({id: r.id, name: r.data.name || "@" + r.data.handle, avatarUrl: r.data.avatar || NO_AV}));
+  },
+};
+
+async function initAuth() {
+  try {
+    const cfg = await fetch("/api/config").then(r => r.ok ? r.json() : {}).catch(() => ({}));
+    if (!cfg.url || !cfg.anonKey || !window.supabase) return;
+    auth.sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+    const {data} = await auth.sb.auth.getSession();
+    if (data.session) await startSession(data.session.user);
+    auth.sb.auth.onAuthStateChange(ev => { if (ev === "SIGNED_OUT" && auth.user) location.reload(); });
+  } catch (e) { console.error(e); }
+  finally { auth.ready = true; renderAll(); }
+}
+async function startSession(u) {
+  auth.user = u;
+  const {data: adm} = await auth.sb.from("admins").select("user_id").eq("user_id", u.id).maybeSingle();
+  auth.admin = !!adm;
+  FEATURES.social = true;
+  $("#navVote").hidden = false;
+  window.claude = {use: async name => name === "db" ? sbDB : name === "user" ? sbUser : null};
+  await connect();
+}
+let authMode = "login";
+function openAuth(mode = authMode) {
+  authMode = mode;
+  const login = mode === "login";
+  $("#authBox").innerHTML = `
+    <h2 style="font-size:28px">${login ? "Se connecter" : "Créer un compte"}</h2>
+    <p class="muted" style="margin:-8px 0 0;font-weight:600">${login ? "Retrouvez votre journal, vos notes et vos amis sur tous vos appareils." : "Ce que vous avez déjà noté sur cet appareil sera ajouté à votre nouveau compte."}</p>
+    <form id="authForm" class="form-grid" style="grid-template-columns:minmax(0,1fr)">
+      <label class="lbl">Adresse e-mail<input class="input" id="auEmail" type="email" required autocomplete="email"></label>
+      <label class="lbl">Mot de passe<input class="input" id="auPass" type="password" required minlength="6" autocomplete="${login ? "current-password" : "new-password"}" placeholder="6 caractères minimum"></label>
+      <p class="note" id="auMsg" role="status" style="margin:0"></p>
+      <button class="btn primary" type="submit" id="auGo" style="justify-content:center">${login ? "Se connecter" : "Créer mon compte"}</button>
+      <button class="btn ghost" type="button" data-auth-mode="${login ? "signup" : "login"}" style="justify-content:center">${login ? "Pas encore de compte ? Créer un compte" : "Déjà un compte ? Se connecter"}</button>
+    </form>`;
+  const dlg = $("#dlgAuth"); if (!dlg.open) dlg.showModal();
+  $("#auEmail").focus();
+  $("[data-auth-mode]").onclick = ev => openAuth(ev.target.dataset.authMode);
+  $("#authForm").onsubmit = async ev => {
+    ev.preventDefault();
+    const email = $("#auEmail").value.trim(), password = $("#auPass").value, msg = $("#auMsg"), go = $("#auGo");
+    go.disabled = true; msg.textContent = "Un instant…";
+    try {
+      const {data, error} = login
+        ? await auth.sb.auth.signInWithPassword({email, password})
+        : await auth.sb.auth.signUp({email, password, options: {emailRedirectTo: location.origin}});
+      if (error) throw error;
+      if (!data.session) { msg.textContent = "Compte créé. Ouvrez l'e-mail de confirmation que vous venez de recevoir, puis revenez vous connecter."; go.disabled = false; return; }
+      dlg.close(); await startSession(data.session.user); toast(login ? "Connecté" : "Compte créé, bienvenue !"); renderAll();
+    } catch (e) {
+      const m = String(e?.message || "");
+      msg.textContent = /Invalid login/i.test(m) ? "E-mail ou mot de passe incorrect."
+        : /Email not confirmed/i.test(m) ? "Confirmez d'abord votre adresse avec l'e-mail reçu."
+        : /already registered/i.test(m) ? "Cette adresse a déjà un compte : connectez-vous."
+        : /Password/i.test(m) ? "Mot de passe trop faible : 6 caractères minimum."
+        : "Échec : " + m;
+      go.disabled = false;
+    }
+  };
+}
+async function logout() {
+  try { localStorage.removeItem(LS_KEY); } catch {}
+  auth.user = null;
+  await auth.sb.auth.signOut();
+  location.hash = ""; location.reload();
+}
 readLocal();
 renderAll();
-connect();
+initAuth();
 </script>
 </body>
 </html>
