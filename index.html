@@ -2005,7 +2005,7 @@ function viewProfile() {
       <div class="pf-id"><h1>${esc(name)}</h1><div class="handle">@${esc(p.handle || "cinephile")} ${planBadge(badgeId())}</div></div>
       <button class="btn primary" data-act="edit-profile">Modifier le profil</button>
     </div>
-    ${p.bio ? `<p class="pf-bio">${esc(p.bio)}</p>` : `<p class="pf-bio muted">Ajoutez une bio pour dire quel genre de cinéphile vous êtes.</p>`}
+    ${p.bio ? `<p class="pf-bio">${esc(p.bio)}</p>` : ""}
     <div class="stats">
       <div class="stat"><b class="num">${reviews.length}</b><span>Critiques</span></div>
       <div class="stat"><b class="num">${avg ? avg.toFixed(1).replace(".", ",") : "–"}</b><span>Note moyenne</span></div>
@@ -2020,9 +2020,9 @@ function viewProfile() {
           ${reviews.length ? `<div class="reviews">${reviews.slice(0,3).map(x => reviewHTML(x.f, x.e)).join("")}</div>` : `<p class="muted">Pas encore de critique.</p>`}
       </div>
       <aside style="min-width:0">
-        <h2 class="sec-title">${ICON.star} Réalisateurs·rices <button class="btn ghost small more" data-act="edit-profile">Modifier</button></h2>
-          ${p.favDirectors.length ? `<div class="people">${p.favDirectors.map(n => personRow(n,"d")).join("")}</div>` : `<p class="muted">Aucun pour l'instant. Touchez ♡ à côté d'un nom dans une fiche, ou ajoutez-les ici.</p>`}
-        <h2 class="sec-title">${ICON.user} Acteurs·rices <button class="btn ghost small more" data-act="edit-profile">Modifier</button></h2>
+        <h2 class="sec-title">${ICON.star} Réalisateurs·rices</h2>
+          ${p.favDirectors.length ? `<div class="people">${p.favDirectors.map(n => personRow(n,"d")).join("")}</div>` : `<p class="muted">Aucun pour l'instant. Touchez ♡ à côté d'un nom dans la fiche d'un film.</p>`}
+        <h2 class="sec-title">${ICON.user} Acteurs·rices</h2>
           ${p.favActors.length ? `<div class="people">${p.favActors.map(n => personRow(n,"a")).join("")}</div>` : `<p class="muted">Aucun pour l'instant.</p>`}
         <h2 class="sec-title">${ICON.chart} Mes notes <span class="more muted" style="color:var(--muted)">${rated.length} notées</span></h2>
           <div class="hist"><span class="end">★</span><div class="bars">${counts.map((c,i) => `<div class="bar ${c?"on":""}" style="height:${Math.max(3, c/max*100)}%" title="${starsText((i+1)/2)} : ${c}"></div>`).join("")}</div><span class="end">★★★★★</span></div>
@@ -2373,57 +2373,35 @@ function titleOptions(kind, sel) {
 }
 function renderProfileEditor() {
   const d = draft;
-  const peopleEd = (key, label, listId) => `
-    <div class="full" style="display:grid;gap:8px"><span class="lbl">${label}</span>
-      <div class="chips">${d[key].map((n,i) => `<span class="chip">${esc(n)}<button class="x" data-rm="${key}" data-i="${i}" aria-label="Retirer ${esc(n)}">×</button></span>`).join("") || '<span class="note">Aucun pour l\'instant.</span>'}</div>
-      <div style="display:flex;gap:8px"><input class="input" id="in-${key}" list="${listId}" placeholder="Nom, puis Entrée"><button class="btn" data-addp="${key}">Ajouter</button></div></div>`;
   $("#pedit").innerHTML = `
     <h2 style="font-size:30px">Modifier le profil</h2>
     <div class="form-grid">
       <div class="full" style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
         ${d.avatar ? `<div class="av-crop" id="avCrop" title="Glissez pour placer la photo"><img id="avImg" alt="" draggable="false"></div>` : `<div class="avatar" style="width:84px;height:84px;font-size:30px;border-color:var(--surface)">${esc(initials(d.name || "Moi"))}</div>`}
         <div style="display:grid;gap:10px;flex:1;min-width:200px">
+          <span class="lbl">Photo de profil</span>
           <div class="row-btns"><label class="btn" for="pAvatar">${d.avatar ? "Changer la photo" : "Ajouter une photo"}</label><input type="file" id="pAvatar" accept="image/*" hidden>${d.avatar ? `<button class="btn ghost danger" data-act="rm-avatar">Retirer</button><button class="btn ghost small" data-act="av-reset">Recentrer</button>` : ""}</div>
           ${d.avatar ? `<label class="lbl">Zoom<input type="range" id="avZoom" min="1" max="5" step="0.01" value="${avCrop.zoom}" style="accent-color:#fff"></label><span class="note">Glissez la photo dans le cercle pour la placer.</span>` : ""}
         </div>
       </div>
       <label class="lbl">Nom affiché<input class="input" id="pName" maxlength="40" value="${esc(d.name)}"></label>
       <label class="lbl">Pseudo<input class="input" id="pHandle" maxlength="24" value="${esc(d.handle)}" placeholder="cinephile"></label>
-      <label class="lbl full">Bio<textarea class="input" id="pBio" maxlength="400" style="min-height:80px" placeholder="Fan de thrillers coréens et de séries au long cours…">${esc(d.bio)}</textarea></label>
-      <div class="full" style="display:grid;gap:8px"><span class="lbl">Couleur de la bannière</span>
-        <div class="swatches">${Object.entries(ALL_ACCENTS).map(([k,[a,b]]) => `<button class="sw ${accentAllowed(k) ? "" : "locked"}" data-accent="${k}" aria-pressed="${d.accent===k && !d.banner}" aria-label="${k}${accentAllowed(k) ? "" : " (réservé aux abonnés)"}" title="${accentAllowed(k) ? k : "Réservé aux abonnés"}" style="background:linear-gradient(135deg,${a},${b})"></button>`).join("")}</div></div>
-      <div class="full" style="display:grid;gap:8px"><span class="lbl">Image de bannière</span>
+      <div class="full" style="display:grid;gap:8px"><span class="lbl">Bannière</span>
         ${d.bannerImg ? `<div class="bn-crop" id="bnCrop" style="aspect-ratio:1200/${d.bannerH || 320}" title="Glissez pour placer l'image"><img id="bnImg" alt="" draggable="false"></div>
         <div class="bn-ctrls">
           <label class="lbl">Zoom<input type="range" id="bnZoom" min="1" max="4" step="0.01" value="${bnCrop.zoom}"></label>
           <label class="lbl">Hauteur de la bannière · <span id="bnHVal">${d.bannerH || 320}</span><input type="range" id="bnH" min="120" max="520" step="10" value="${d.bannerH || 320}"></label>
           <button class="btn small ghost" data-act="bn-reset">Recentrer</button>
         </div>
-        <span class="note">Glissez l'image pour la placer, zoomez avec la molette ou le curseur, réglez la hauteur. Le cadre montre exactement la bannière finale.</span>` : ""}
+        <span class="note">Glissez l'image pour la placer, zoomez avec la molette ou le curseur, réglez la hauteur.</span>` : ""}
         <div class="row-btns"><label class="btn" for="pBannerImg">${d.bannerImg ? "Changer l'image" : "Importer une image"}</label><input type="file" id="pBannerImg" accept="image/*" hidden>${d.bannerImg ? `<button class="btn ghost danger" data-act="rm-banner-img">Retirer l'image</button>` : ""}</div>
-        <span class="note">Format large conseillé (par exemple 1600 × 400). L'image importée remplace la couleur et l'affiche ; choisir une couleur ou une affiche la retire.</span></div>
-      <label class="lbl full">…ou l'affiche d'un titre en fond<select class="input" id="pBanner"><option value="">Aucune</option>${allTitles().map(f => `<option value="${esc(f.id)}" ${f.id===d.banner?"selected":""}>${esc(f.title)}${f.img ? " (affiche)" : ""}</option>`).join("")}</select></label>
-      ${[0,1,2,3].map(i => `<label class="lbl">Film favori ${i+1}<select class="input" data-fav="favFilms" data-i="${i}">${titleOptions("film", d.favFilms[i])}</select></label>`).join("")}
-      ${[0,1,2,3].map(i => `<label class="lbl">Série favorite ${i+1}<select class="input" data-fav="favSeries" data-i="${i}">${titleOptions("serie", d.favSeries[i])}</select></label>`).join("")}
-      ${peopleEd("favDirectors", "Réalisateurs·rices favori·te·s", "dirList")}
-      ${peopleEd("favActors", "Acteurs·rices favori·te·s", "actList")}
+        ${d.bannerImg ? "" : `<span class="note">Format large conseillé, par exemple 1600 × 400.</span>`}</div>
     </div>
-    <div class="row-btns" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:16px">
-      <button class="btn ghost danger" data-act="reset">${resetArmed ? "Confirmer : tout effacer" : "Effacer toutes mes données"}</button>
-      <div class="row-btns"><button class="btn ghost" data-close>Annuler</button><button class="btn primary" data-act="save-profile">Enregistrer</button></div>
+    <div class="row-btns" style="justify-content:flex-end;border-top:1px solid var(--line);padding-top:16px">
+      <button class="btn ghost" data-close>Annuler</button><button class="btn primary" data-act="save-profile">Enregistrer</button>
     </div>`;
-  const keep = () => { d.name = $("#pName").value; d.handle = $("#pHandle").value.replace(/^@/, "").replace(/\s+/g, ""); d.bio = $("#pBio").value; };
-  ["pName","pHandle","pBio"].forEach(id => $("#"+id).oninput = keep);
-  $("#pBanner").onchange = ev => { d.banner = ev.target.value; if (d.banner) d.bannerImg = ""; keep(); renderProfileEditor(); };
-  $$("[data-accent]").forEach(b => b.onclick = () => { if (!accentAllowed(b.dataset.accent)) { toast(b.dataset.accent === "nuit" ? "Couleur réservée au plan Cinéphile+." : "Couleur réservée aux abonnés Cinéphile."); return; } d.accent = b.dataset.accent; d.banner = ""; d.bannerImg = ""; keep(); renderProfileEditor(); });
-  $$("[data-fav]").forEach(s => s.onchange = () => {
-    const arr = [0,1,2,3].map(i => $(`[data-fav="${s.dataset.fav}"][data-i="${i}"]`).value).filter(Boolean);
-    d[s.dataset.fav] = [...new Set(arr)];
-  });
-  $$("[data-rm]").forEach(b => b.onclick = () => { keep(); d[b.dataset.rm].splice(+b.dataset.i, 1); renderProfileEditor(); });
-  const addP = key => { const v = $("#in-" + key).value.trim(); if (v && !d[key].includes(v)) d[key].push(v); keep(); renderProfileEditor(); $("#in-" + key).focus(); };
-  $$("[data-addp]").forEach(b => b.onclick = () => addP(b.dataset.addp));
-  ["favDirectors","favActors"].forEach(k => $("#in-" + k).onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); addP(k); } });
+  const keep = () => { d.name = $("#pName").value; d.handle = $("#pHandle").value.replace(/^@/, "").replace(/\s+/g, ""); };
+  ["pName","pHandle"].forEach(id => $("#"+id).oninput = keep);
   $("#pAvatar").onchange = ev => { const file = ev.target.files[0]; if (file) { keep(); loadAvatar(file); } };
   $("#pBannerImg").onchange = ev => { const file = ev.target.files[0]; if (file) { keep(); loadBannerImg(file); } };
   setupBannerCrop(); setupAvatarCrop();
