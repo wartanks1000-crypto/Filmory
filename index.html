@@ -360,6 +360,17 @@ label.lbl{display:grid;gap:5px;font-size:13px;font-weight:800;color:var(--muted)
 .fr-vote{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;flex-wrap:wrap}
 .fr-vote svg{width:16px;height:16px}
 .linkish{background:none;border:0;padding:0;font-weight:900;text-decoration:underline;color:var(--fg)}
+/* liens vers le profil d'un membre */
+.linkish.plain{text-decoration:none;font:inherit;color:inherit;cursor:pointer;max-width:100%;text-align:left}
+.linkish.plain:hover{text-decoration:underline}
+.crev-user{background:none;border:0;padding:0;border-radius:50%;cursor:pointer;flex:none;display:inline-grid}
+.crev-user:hover{filter:brightness(1.15)}
+button.bb-av{border:0;color:inherit;cursor:pointer}
+.fr-hit-who{display:flex;align-items:center;gap:10px;flex:1;min-width:0;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer}
+.fr-hit-who:hover .hn{text-decoration:underline}
+.mb-actions{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:6px}
+.mb-people{display:flex;flex-wrap:wrap;gap:8px}
+.mb-person{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;font-size:14px}
 .fr-k{display:block;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .fr-posters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .fr-posters.six{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -1315,11 +1326,13 @@ const ui = {view:"accueil", q:"", type:"all", genre:"", sort:"popular", jType:"a
 
 function renderAll() {
   const v = (location.hash || "#accueil").slice(1);
-  ui.view = VIEWS.includes(v) ? v : "accueil";
+  const mm = v.match(/^membre\/([0-9a-f-]{36})$/i);
+  ui.member = mm ? mm[1].toLowerCase() : null;
+  ui.view = mm ? "membre" : VIEWS.includes(v) ? v : "accueil";
   $$("nav.tabs a").forEach(a => a.dataset.v === ui.view ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   renderMeBtn();
   $("#main").className = ui.view === "accueil" ? "home" : "";
-  ({accueil:viewHome, parcourir:viewBrowse, watchlist:viewWatchlist, journal:viewJournal, collection:viewCollection, filmdumois:viewVote, quiz:viewQuiz, critiques:viewReviews, admin:viewAdmin, profil:viewProfile, parametres:viewSettings, amis:viewFriends, support:viewSupport, abonnement:viewPlans, statistiques:viewStats})[ui.view]();
+  ({accueil:viewHome, parcourir:viewBrowse, watchlist:viewWatchlist, journal:viewJournal, collection:viewCollection, filmdumois:viewVote, quiz:viewQuiz, critiques:viewReviews, admin:viewAdmin, profil:viewProfile, parametres:viewSettings, amis:viewFriends, membre:viewMember, support:viewSupport, abonnement:viewPlans, statistiques:viewStats})[ui.view]();
   refreshDatalists(); onScroll();
 }
 function renderMeBtn() {
@@ -1658,7 +1671,9 @@ async function publishPublic() {
     await ref.set({
       name: p.name || "", handle: p.handle || "", bio: (p.bio || "").slice(0, 280),
       avatar: p.avatar && p.avatar.length < 90000 ? p.avatar : "", plan: badgeId(),
-      favFilms: p.favFilms, favSeries: p.favSeries,
+      favFilms: p.favFilms, favSeries: p.favSeries, favActors: p.favActors.slice(0, 12), favDirectors: p.favDirectors.slice(0, 12),
+      banner: p.banner || "", bannerImg: p.bannerImg && p.bannerImg.length < 200000 ? p.bannerImg : "", bannerH: p.bannerH || 0,
+      accent: accentAllowed(p.accent) ? p.accent : "blanc", friends: p.friends.length,
       films: all.filter(x => x.f.t === "film").length, series: all.filter(x => x.f.t === "serie").length,
       reviews: Object.values(state.lib.entries).filter(e => e.review).length,
       avg: rated.length ? Math.round(rated.reduce((s,e) => s + e.rating, 0) / rated.length * 10) / 10 : 0,
@@ -1687,7 +1702,7 @@ function viewSettings() {
       ${sw("autoplay", "Lecture automatique des bandes-annonces", "La bande-annonce démarre dès qu'on entre dans le disque.")}
     </section>
     ${FEATURES.social ? `<section class="set-card"><h2>Confidentialité</h2>
-      ${sw("public", "Profil visible par mes amis", "Vos amis voient votre nom, vos favoris, vos statistiques et vos derniers films vus. Votre journal et vos critiques restent privés.")}
+      ${sw("public", "Profil visible par les autres membres", "Les membres connectés voient votre photo, votre bannière, vos favoris, vos statistiques et vos derniers films vus. Votre journal reste privé ; seules les critiques que vous publiez sont visibles.")}
     </section>` : ""}
     <section class="set-card"><h2>Données</h2>
       <div class="set-row"><span><b>Exemples</b><small>${demo ? `${demo} titres d'exemple dans votre journal.` : "Ajoute quelques visionnages et critiques d'exemple."}</small></span>
@@ -1733,8 +1748,8 @@ function viewFriends() {
     const favs = (d?.favFilms || []).map(byId).filter(Boolean).slice(0, 4);
     const recent = (d?.recent || []).map(x => ({f: byId(x.id), r: x.r})).filter(x => x.f).slice(0, 6);
     return `<article class="friend">
-      <div class="fr-head"><span class="bb-av lg">${av ? `<img alt="" src="${esc(av)}">` : esc(initials(name))}</span>
-        <span style="min-width:0;flex:1"><b class="fr-name"></b><small class="muted">${d?.handle ? "@" + esc(d.handle) : ""} ${planBadge(d?.plan)}</small></span>
+      <div class="fr-head"><button class="bb-av lg crev-user" data-user="${esc(id)}" aria-label="Voir le profil">${av ? `<img alt="" src="${esc(av)}">` : esc(initials(name))}</button>
+        <span style="min-width:0;flex:1"><button class="linkish plain fr-name" data-user="${esc(id)}"></button><small class="muted">${d?.handle ? "@" + esc(d.handle) : ""} ${planBadge(d?.plan)}</small></span>
         <button class="btn small" data-chat-with="${esc(id)}">Message</button><button class="btn ghost small" data-unfriend="${esc(id)}">Retirer</button></div>
       ${d ? `<div class="fr-stats"><span><b class="num">${d.films}</b> films</span><span><b class="num">${d.series}</b> séries</span><span><b class="num">${d.reviews}</b> critiques</span><span><b class="num">${d.avg ? String(d.avg).replace(".", ",") : "–"}</b> moyenne</span></div>
         ${vote && byId(vote) ? `<div class="fr-vote">${ICON.trophy} A voté pour <button class="linkish" data-open="${esc(vote)}">${esc(byId(vote).title)}</button> ce mois-ci</div>` : ""}
@@ -1759,7 +1774,7 @@ function viewFriends() {
   const q = $("#frQ"), hitsEl = $("#frHits");
   const paint = hits => {
     friendHits = hits.filter(h => h.id !== votes.myId);
-    hitsEl.innerHTML = friendHits.map((h, i) => `<div class="fr-hit"><img alt="" src="${esc(h.avatarUrl)}"><span class="hn"></span>
+    hitsEl.innerHTML = friendHits.map((h, i) => `<div class="fr-hit"><button class="fr-hit-who" data-user="${esc(h.id)}" title="Voir le profil"><img alt="" src="${esc(h.avatarUrl)}"><span class="hn"></span></button>
       ${ids.includes(h.id) ? `<span class="muted" style="font-size:13px">Déjà ami</span>` : `<button class="btn small primary" data-addfriend="${i}">Ajouter</button>`}</div>`).join("");
     $$(".fr-hit .hn", hitsEl).forEach((el, i) => el.textContent = friendHits[i].name);
   };
@@ -1775,6 +1790,106 @@ function viewFriends() {
     state.profile.friends = state.profile.friends.filter(x => x !== b.dataset.unfriend);
     save("profile"); viewFriends();
   });
+}
+
+function addFriend(id) {
+  if (!auth.user) { if (auth.sb) openAuth("login"); toast("Connectez-vous pour ajouter des amis."); return; }
+  if (!id || id === myId() || state.profile.friends.includes(id)) return;
+  state.profile.friends = [...state.profile.friends, id];
+  save("profile"); notify(id, "friend"); loadFriends(true);
+  toast(`${mb.data?.name || nameOf(id, "Cette personne")} ajouté·e à vos amis`);
+  renderAll();
+}
+function removeFriend(id) {
+  state.profile.friends = state.profile.friends.filter(x => x !== id);
+  save("profile"); toast("Retiré de vos amis"); renderAll();
+}
+
+/* ----- Profil d'un autre membre ----- */
+const mb = {id: null, data: undefined, revs: [], at: 0, err: false};
+async function loadMember(id) {
+  Object.assign(mb, {id, data: undefined, revs: [], at: Date.now(), err: false});
+  try {
+    const [pub, revs, likes] = await Promise.all([
+      auth.sb.from("public_profiles").select("data").eq("id", id).maybeSingle(),
+      auth.sb.from("reviews").select("user_id,title_id,title,author,rating,text,spoiler,created_at,updated_at").eq("user_id", id).order("updated_at", {ascending: false}).limit(30),
+      auth.sb.from("review_likes").select("user_id,title_id").eq("author_id", id),
+    ]);
+    if (mb.id !== id) return;
+    if (pub.error || revs.error) throw pub.error || revs.error;
+    mb.data = pub.data?.data || null;
+    if (mb.data) { registerTitles(mb.data.titles); peopleCache[id] = {id, name: mb.data.name || (mb.data.handle ? "@" + mb.data.handle : ""), avatarUrl: mb.data.avatar || NO_AV}; }
+    mb.revs = (revs.data || []).map(r => {
+      const l = (likes.data || []).filter(x => x.title_id === r.title_id);
+      if (r.title) registerTitles([r.title]);
+      return {...r, likes: l.length, liked: l.some(x => x.user_id === myId())};
+    });
+  } catch (e) { if (mb.id === id) { mb.err = true; mb.data = null; } console.warn(e); }
+  if (ui.view === "membre" && ui.member === id) viewMember();
+}
+function viewMember() {
+  const id = ui.member;
+  if (id === myId()) { location.hash = "profil"; return; }
+  if (!auth.user) {
+    $("#main").innerHTML = `<div class="narrow"><div class="empty" style="margin-top:60px"><h3>Connectez-vous pour voir ce profil</h3><p>Les profils des membres sont visibles par les personnes qui ont un compte Filmory.</p>${auth.sb ? `<button class="btn primary" data-act="login">Se connecter</button>` : ""}</div></div>`;
+    return;
+  }
+  if (mb.id !== id || Date.now() - mb.at > 60000) loadMember(id);
+  const d = mb.id === id ? mb.data : undefined, revs = mb.id === id ? mb.revs : [];
+  const name = d?.name || (d?.handle ? "@" + d.handle : "") || revs[0]?.author?.name || nameOf(id, "Cinéphile");
+  const handle = d?.handle || revs[0]?.author?.handle || "";
+  const isFriend = state.profile.friends.includes(id);
+  // bannière : image perso, sinon couleurs de l'affiche choisie, sinon couleur du profil
+  const bf = d?.banner && byId(d.banner);
+  let [b1, b2] = ALL_ACCENTS[d?.accent] || ACCENTS.blanc, bimg = "";
+  if (bf) { const c = posterColors(bf); b1 = c.c1; b2 = c.c2; if (bf.img && PURL[bf.img]) bimg = `<img alt="" src="${PURL[bf.img]}">`; }
+  if (d?.bannerImg) bimg = `<img class="custom" alt="" src="${esc(d.bannerImg)}">`;
+  const posters = (ids, n = 4) => (ids || []).map(byId).filter(Boolean).slice(0, n);
+  // rubriques toujours affichées ; un ancien profil public sans le champ attend la prochaine connexion de la personne
+  const empty = (field, txt) => `<p class="muted">${d && !(field in d) ? "Pas encore partagé : s'affichera à sa prochaine connexion." : txt}</p>`;
+  const favBlock = (title, icon, field, txt) => { const list = posters(d?.[field]);
+    return `<h2 class="sec-title">${icon} ${title}</h2>${list.length ? `<div class="fav4">${list.map(f => cardHTML(f)).join("")}</div>` : empty(field, txt)}`; };
+  const people = (title, icon, field, txt) => { const list = d?.[field] || [];
+    return `<h2 class="sec-title">${icon} ${title}</h2>${list.length ? `<div class="mb-people">${list.map(n => `<span class="mb-person">${esc(n)}</span>`).join("")}</div>` : empty(field, txt)}`; };
+  const recent = (d?.recent || []).map(x => ({f: byId(x.id), r: x.r})).filter(x => x.f);
+  const loading = d === undefined;
+  const actions = `<div class="mb-actions">
+      ${isFriend ? `<button class="btn" data-friend-rm="${esc(id)}" title="Retirer de vos amis">✓ Ami</button>` : `<button class="btn primary" data-friend-add="${esc(id)}">${ICON.friends} Ajouter en ami</button>`}
+      <button class="btn" data-chat-with="${esc(id)}">${ICON.chat} Message</button></div>`;
+  $("#main").innerHTML = `<div class="narrow">
+    <div class="banner" style="--b1:${b1};--b2:${b2};${d?.bannerImg ? `height:auto;aspect-ratio:1200/${d.bannerH || 320}` : ""}">${bimg}</div>
+    <div class="pf-head">
+      <div class="avatar">${d?.avatar ? `<img alt="Photo de profil" src="${esc(d.avatar)}">` : esc(initials(name))}</div>
+      <div class="pf-id"><h1 id="mbName"></h1><div class="handle">${handle ? "@" + esc(handle) : ""} ${planBadge(d?.plan)}</div></div>
+      ${actions}
+    </div>
+    ${d?.bio ? `<p class="pf-bio" id="mbBio"></p>` : ""}
+    ${loading ? `<p class="muted" style="margin:24px 20px">Chargement du profil…</p>`
+      : mb.err ? `<div class="empty"><h3>Profil indisponible</h3><p>Ce profil n'a pas pu être chargé. Réessayez dans un instant.</p></div>`
+      : `${d ? `<div class="stats">
+          <div class="stat"><b class="num">${d.films ?? 0}</b><span>Films vus</span></div>
+          <div class="stat"><b class="num">${d.series ?? 0}</b><span>Séries vues</span></div>
+          <div class="stat"><b class="num">${revs.length}</b><span>Critiques publiées</span></div>
+          <div class="stat"><b class="num">${d.avg ? String(d.avg).replace(".", ",") : "–"}</b><span>Note moyenne</span></div>
+          ${d.friends != null ? `<div class="stat"><b class="num">${d.friends}</b><span>Amis</span></div>` : ""}
+        </div>` : `<p class="note" style="margin:22px 20px 0">Cette personne garde son profil privé : seules ses critiques publiées sont visibles.</p>`}
+      <div class="pf-grid">
+        <div style="min-width:0">
+          ${d ? favBlock("Films favoris", ICON.film, "favFilms", "Aucun film favori pour l'instant.") : ""}
+          ${d ? favBlock("Séries favorites", ICON.tv, "favSeries", "Aucune série favorite pour l'instant.") : ""}
+          <h2 class="sec-title">${ICON.pen} Critiques</h2>
+          ${revs.length ? `<div class="crevs">${revs.map(r => creviewHTML(r, {withTitle: true})).join("")}</div>` : `<p class="muted">Aucune critique publiée pour l'instant.</p>`}
+        </div>
+        <aside style="min-width:0">
+          ${d ? people("Réalisateurs·rices", ICON.star, "favDirectors", "Aucun pour l'instant.") : ""}
+          ${d ? people("Acteurs·rices", ICON.user, "favActors", "Aucun pour l'instant.") : ""}
+          ${d ? `<h2 class="sec-title">${ICON.eye} Vus récemment</h2>${recent.length ? `<div class="strip">${recent.map(x => `<button class="card" data-open="${esc(x.f.id)}" aria-label="${esc(x.f.title)}">${poster(x.f, {mini: true})}${x.r ? `<span class="stars-s" style="font-size:11px">${starsText(x.r)}</span>` : ""}</button>`).join("")}</div>` : `<p class="muted">Rien pour l'instant.</p>`}` : ""}
+        </aside>
+      </div>`}
+  </div>`;
+  // nom et bio sont saisis par d'autres personnes : on les pose en texte
+  $("#mbName").textContent = name;
+  if ($("#mbBio")) $("#mbBio").textContent = d.bio;
 }
 
 /* ----- Statistiques (abonnés) ----- */
@@ -2861,6 +2976,9 @@ document.addEventListener("click", ev => {
   const flt = t.closest("[data-filter]"); if (flt) { ui.type = flt.dataset.filter; }
   const lk = t.closest("[data-rlike]"); if (lk) { toggleLike(lk.dataset.rlike); return; }
   const cw = t.closest("[data-chat-with]"); if (cw) { openChat(cw.dataset.chatWith); return; }
+  const us = t.closest("[data-user]"); if (us) { location.hash = us.dataset.user === myId() ? "profil" : "membre/" + us.dataset.user; return; }
+  const af = t.closest("[data-friend-add]"); if (af) { addFriend(af.dataset.friendAdd); return; }
+  const rf = t.closest("[data-friend-rm]"); if (rf) { removeFriend(rf.dataset.friendRm); return; }
   const a = t.closest("[data-act]"); if (!a) return;
   const act = a.dataset.act;
   if (act === "add-title") openAdd();
@@ -2951,7 +3069,7 @@ const sbDB = {
       },
       async set(body) {
         if (r.kind === "reco") body = {...body, titles: titlesFor([...(body.ids || []), ...(body.featured || [])])};
-        if (r.kind === "public") body = {...body, titles: titlesFor([...(body.favFilms || []), ...(body.favSeries || []), ...(body.recent || []).map(x => x.id)])};
+        if (r.kind === "public") body = {...body, titles: titlesFor([...(body.favFilms || []), ...(body.favSeries || []), ...(body.recent || []).map(x => x.id), body.banner].filter(Boolean))};
         const {error} = await auth.sb.from(r.table).upsert({[r.key]: r.id, data: body, updated_at: new Date().toISOString()});
         if (error) throw {code: "invalid_argument", message: error.message};
       },
@@ -3223,7 +3341,7 @@ $("#ntPanel").addEventListener("click", ev => {
   const n = notif.list.find(x => String(x.id) === b.dataset.nt); if (!n) return;
   markNotifsRead([n.id]); toggleNotifs(false);
   if (n.data?.title) registerTitles([n.data.title]);
-  if (n.kind === "friend") location.hash = "amis";
+  if (n.kind === "friend") location.hash = n.actor_id ? "membre/" + n.actor_id : "amis";
   else if (n.kind === "quiz") location.hash = "quiz";
   else if (n.data?.titleId && byId(n.data.titleId)) openDetail(n.data.titleId);
 });
@@ -3282,7 +3400,7 @@ function creviewHTML(r, {withTitle = false} = {}) {
   const name = r.author?.name || (r.author?.handle ? "@" + r.author.handle : "Cinéphile");
   return `<article class="crev">
     ${withTitle && f ? `<button class="crev-film" data-open="${esc(f.id)}" aria-label="Ouvrir ${esc(f.title)}">${poster(f, {mini: true})}<span style="min-width:0"><b>${esc(f.title)}</b><small>${[f.year, kindLabel(f.t)].filter(Boolean).join(" · ")}</small></span></button>` : ""}
-    <div class="crev-head">${avHTML(r.user_id, name)}<span class="crev-who"><b>${esc(name)}${mine ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${r.rating ? `<span class="stars-s">${starsText(+r.rating)}</span> · ` : ""}${ago(r.updated_at)}</small></span></div>
+    <div class="crev-head"><button class="crev-user" data-user="${esc(r.user_id)}" aria-label="Voir le profil de ${esc(name)}">${avHTML(r.user_id, name)}</button><span class="crev-who"><b><button class="linkish plain" data-user="${esc(r.user_id)}">${esc(name)}</button>${mine ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${r.rating ? `<span class="stars-s">${starsText(+r.rating)}</span> · ` : ""}${ago(r.updated_at)}</small></span></div>
     <div class="${r.spoiler ? "spoil" : ""}"><p class="rtext crev-text">${esc(r.text)}</p>${r.spoiler ? `<button class="btn small spoil-btn" data-act="unspoil">Spoilers · Afficher</button>` : ""}</div>
     <button class="rlike" data-rlike="${esc(r.user_id + "|" + r.title_id)}" aria-pressed="${!!r.liked}" ${mine ? `disabled title="Vous ne pouvez pas aimer votre propre critique"` : `title="${r.liked ? "Je n'aime plus" : "J'aime cette critique"}"`} aria-label="J'aime : ${+r.likes}">${ICON.heart}<span class="num">${+r.likes}</span></button>
   </article>`;
@@ -3306,7 +3424,7 @@ async function loadComm(id, force) {
   if (curId === id) { const el = $("#commReviews"); if (el) el.innerHTML = commInner(id); }
 }
 function paintLikes(key) {
-  const r = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list)].find(x => x.user_id + "|" + x.title_id === key);
+  const r = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list), ...mb.revs].find(x => x.user_id + "|" + x.title_id === key);
   if (!r) return;
   $$("[data-rlike]").filter(b => b.dataset.rlike === key).forEach(b => {
     b.setAttribute("aria-pressed", String(!!r.liked)); b.setAttribute("aria-label", `J'aime : ${+r.likes}`);
@@ -3317,7 +3435,7 @@ async function toggleLike(key) {
   if (!auth.user) { if (auth.sb) openAuth("login"); toast("Connectez-vous pour aimer une critique."); return; }
   const [author, titleId] = key.split("|");
   if (author === myId()) return;
-  const rows = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list)].filter(r => r.user_id === author && r.title_id === titleId);
+  const rows = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list), ...mb.revs].filter(r => r.user_id === author && r.title_id === titleId);
   if (!rows.length) return;
   const on = !rows[0].liked;
   const apply = v => { rows.forEach(r => { r.liked = v; r.likes = Math.max(0, +r.likes + (v ? 1 : -1)); }); paintLikes(key); };
@@ -3365,7 +3483,7 @@ function podiumHTML() {
   // ordre d'un vrai podium : 2e à gauche, 1er au centre (plus haut), 3e à droite
   const spot = i => { const r = top[i];
     return `<div class="pd pd${i + 1}">
-      <div class="pd-who">${r ? `${avHTML(r.user_id, r.name)}<b>${esc(r.name || "Cinéphile")}</b><small><b class="num">${r.month_points}</b> pts</small>` : `<span class="bb-av">?</span><small>Place libre</small>`}</div>
+      <div class="pd-who">${r ? `<button class="crev-user" data-user="${esc(r.user_id)}" aria-label="Voir le profil">${avHTML(r.user_id, r.name)}</button><b><button class="linkish plain" data-user="${esc(r.user_id)}">${esc(r.name || "Cinéphile")}</button></b><small><b class="num">${r.month_points}</b> pts</small>` : `<span class="bb-av">?</span><small>Place libre</small>`}</div>
       <div class="pd-step" aria-label="${i + 1}${i ? "e" : "er"} place"><span>${i + 1}</span></div>
     </div>`; };
   return `<div class="podium3">${spot(1)}${spot(0)}${spot(2)}</div>
@@ -3377,8 +3495,8 @@ function boardHTML() {
   if (quiz.board.err) return `<p class="muted">Classement indisponible. Le créateur doit lancer supabase-etape3.sql dans Supabase.</p>`;
   if (!rows.length) return `<p class="muted">${monthly ? "Personne n'a encore marqué de points ce mois-ci." : "Personne n'a encore joué."} À vous de jouer !</p>`;
   return `<div class="board">${rows.map((r, i) => `<div class="brow ${r.user_id === myId() ? "me" : ""}">
-    <span class="rk">${i < 3 ? MEDALS[i] : i + 1}</span>${avHTML(r.user_id, r.name)}
-    <span class="bn"><b>${esc(r.name || "Cinéphile")}${r.user_id === myId() ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${quizBadge(r.points)} · ${monthly ? r.month_passed : r.passed} réussi${(monthly ? r.month_passed : r.passed) > 1 ? "s" : ""} sur ${r.quizzes} joué${r.quizzes > 1 ? "s" : ""}</small></span>
+    <span class="rk">${i < 3 ? MEDALS[i] : i + 1}</span><button class="crev-user" data-user="${esc(r.user_id)}" aria-label="Voir le profil">${avHTML(r.user_id, r.name)}</button>
+    <span class="bn"><b><button class="linkish plain" data-user="${esc(r.user_id)}">${esc(r.name || "Cinéphile")}</button>${r.user_id === myId() ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${quizBadge(r.points)} · ${monthly ? r.month_passed : r.passed} réussi${(monthly ? r.month_passed : r.passed) > 1 ? "s" : ""} sur ${r.quizzes} joué${r.quizzes > 1 ? "s" : ""}</small></span>
     <span class="bp num">${monthly ? r.month_points : r.points}<small>points</small></span></div>`).join("")}</div>`;
 }
 const maskTitle = (txt, title) => {
