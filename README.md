@@ -76,4 +76,20 @@ Puis envoyez sur GitHub les nouveaux fichiers (`index.html`, `api/config.js`, `s
    ```
 3. Rechargez le site : badge Créateur, boîte de réception du support et bouton « Recommander » apparaissent.
 
+## Étape 3 : notifications, critiques publiques, quiz, watchlist, admin et messagerie
+
+1. Dans Supabase → **SQL Editor → New query**, collez tout le contenu de `supabase-etape3.sql`, puis **Run**
+   (le script peut être relancé sans risque).
+2. Envoyez sur GitHub `index.html` et `supabase-etape3.sql` ; Vercel redéploie tout seul.
+
+Ce qui arrive avec cette étape :
+- **Cloche de notifications** dans l'en-tête : quelqu'un vous ajoute en ami, aime votre critique, ou vous gagnez un grade au quiz.
+- **Critiques publiques** : les critiques des membres connectés sont visibles par tous, sous le clap de chaque film, et peuvent être aimées.
+  Les critiques déjà écrites sont publiées automatiquement à la prochaine connexion (pas les critiques « exemple »).
+- **Films & séries** : colonne « Critiques les plus aimées » sur le côté (en haut sur téléphone).
+- **Watchlist** : nouvel onglet, avec filtre Tout / Films / Séries et tri.
+- **Quiz** : 10 questions tirées au hasard de TMDB, points, grades, classement du mois et podium sur l'accueil.
+- **Admin** (visible seulement par le créateur) : recommandations, films « À la une » du bandeau d'accueil, modération des critiques.
+- **Messagerie** : bulle en bas à droite pour discuter avec ses amis et se conseiller des films.
+
 Les données et images de films viennent de TMDB. Ce produit utilise l'API TMDB mais n'est ni approuvé ni certifié par TMDB.

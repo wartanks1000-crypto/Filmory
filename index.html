@@ -647,6 +647,190 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 .sw[aria-pressed="true"]{border-color:var(--fg);box-shadow:0 0 0 2px var(--surface) inset}
 .note{font-size:13px;color:var(--muted);font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--accent);color:var(--accent-ink);padding:10px 18px;border-radius:999px;font-weight:800;font-size:14px;z-index:50;max-width:calc(100vw - 32px);box-shadow:0 8px 30px var(--glow)}
+
+/* ---------- notifications ---------- */
+.nt-wrap{position:relative;display:inline-flex}
+.icon-btn{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(32,32,43,.85);display:grid;place-items:center;color:var(--fg);padding:0}
+.icon-btn:hover{border-color:var(--muted)}
+.nt-dot{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--danger);color:#fff;font-size:11px;font-weight:900;display:grid;place-items:center;line-height:1;box-shadow:0 0 0 2px var(--bg)}
+.nt-panel{width:340px;max-height:min(70dvh,520px);overflow:auto;padding:6px;align-content:start}
+.nt-panel::before{right:13px}
+.nt-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px 10px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.nt-head .linkish{font-size:12.5px;font-weight:800;color:var(--muted)}
+.nt-item{display:grid;gap:8px;padding:10px;border-radius:10px}
+.nt-item.unread{background:var(--surface-2)}
+.nt-main{display:flex;gap:10px;align-items:flex-start;background:none;border:0;padding:0;text-align:left;width:100%;color:var(--fg)}
+.nt-ic{width:30px;height:30px;border-radius:50%;background:var(--bg-2);display:grid;place-items:center;flex:none;color:var(--muted)}
+.nt-ic svg{width:16px;height:16px}
+.nt-tx{font-size:14px;font-weight:600;line-height:1.35;min-width:0}
+.nt-tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.nt-item .btn{justify-self:start;margin-left:40px}
+.nt-empty{padding:14px 10px;margin:0}
+@media (max-width:760px){.nt-panel{right:-50px;width:min(340px,calc(100vw - 24px))}.nt-panel::before{right:63px}}
+
+/* ---------- critiques de la communauté ---------- */
+.br-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:34px;align-items:start;max-width:1400px}
+.side-rev{position:sticky;top:76px;max-height:calc(100dvh - 92px);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--line) transparent;background:var(--bg-2);border:1px solid var(--line);border-radius:14px;padding:4px 14px 14px}
+.side-rev .sec-title{font-size:17px;margin:12px 0}
+.side-rev .sec-title svg{width:20px;height:20px}
+.crevs{display:grid;gap:12px}
+.crev{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;position:relative;min-width:0}
+.crev-film{display:flex;gap:10px;align-items:center;background:none;border:0;padding:0;text-align:left;color:var(--fg);min-width:0}
+.crev-film .poster{width:38px;flex:none;border-radius:4px}
+.crev-film b{display:block;font-size:14.5px;line-height:1.2}
+.crev-film small{color:var(--muted);font-size:12px}
+.crev-film:hover b{text-decoration:underline}
+.crev-head{display:flex;gap:10px;align-items:center;min-width:0}
+.crev-head .bb-av{width:30px;height:30px;font-size:11px}
+.crev-who{min-width:0}
+.crev-who b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crev-who small{color:var(--muted);font-size:12px}
+.crev-text{font-size:14px;max-width:none}
+.side-rev .crev-text{display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden}
+.rlike{justify-self:start;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg-2);border-radius:999px;padding:4px 11px;font-size:13px;font-weight:800;color:var(--muted)}
+.rlike svg{width:15px;height:15px}
+.rlike[aria-pressed="true"]{color:var(--heart);border-color:var(--heart)}
+.rlike[aria-pressed="true"] svg{fill:currentColor}
+.rlike:disabled{cursor:default;opacity:.7}
+.rlike:not(:disabled):hover{border-color:var(--muted)}
+@media (max-width:1000px){
+  .br-layout{grid-template-columns:minmax(0,1fr)}
+  .side-rev{position:static;max-height:none;order:-1;padding-bottom:10px;margin-bottom:6px}
+  .side-rev .crevs{grid-auto-flow:column;grid-auto-columns:minmax(260px,78vw);overflow-x:auto;padding-bottom:6px;align-items:start}
+}
+.comm{max-width:820px;margin:34px auto 0;color:#fff}
+.comm .sec-title{margin:0 0 14px}
+.stage .comm{animation:bookIn .45s 1.4s both}
+.stage.closing .comm{animation:fadeOut .15s both}
+
+/* ---------- admin ---------- */
+.adm-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:18px;align-items:start}
+.adm-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:grid;gap:10px;align-content:start}
+.adm-card h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.adm-row{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.adm-row .card{gap:0}
+.adm-row .poster{border-radius:4px}
+.adm-row b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-row small{color:var(--muted);font-size:12.5px}
+.adm-btns{display:flex;gap:4px;flex-wrap:wrap;justify-content:end}
+.adm-btns .btn{padding:4px 9px}
+.adm-hits{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:22px 14px}
+.adm-hit{display:grid;gap:6px;align-content:start}
+.adm-hit .btn{justify-content:center;padding:5px 8px;font-size:12.5px}
+.adm-rev{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+.adm-rev p{margin:0;font-weight:500;font-size:14px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.adm-rev small{color:var(--muted)}
+
+/* ---------- quiz ---------- */
+.qz{max-width:900px;margin-inline:auto}
+.qz-hero{position:relative;overflow:hidden;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,#1c1c24,#0e0e11 60%);padding:clamp(20px,4vw,36px);display:grid;gap:14px;justify-items:start}
+.qz-hero h2{font-size:clamp(26px,4vw,38px)}
+.qz-hero p{margin:0;color:var(--muted);max-width:56ch;font-weight:600}
+.qz-hero::after{content:"?";position:absolute;right:10px;bottom:-70px;font-size:280px;font-weight:900;color:rgba(255,255,255,.04);line-height:1;pointer-events:none}
+.qz-hero > *{position:relative;z-index:1}
+.qz-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:760px){.qz-cols{grid-template-columns:minmax(0,1fr)}}
+.qz-ladder{display:grid;gap:6px}
+.qz-step{display:flex;justify-content:space-between;gap:10px;padding:8px 12px;border-radius:8px;background:var(--bg-2);border:1px solid var(--line);font-size:14px}
+.qz-step.on{border-color:#fff;background:var(--surface-2)}
+.qz-step.done{color:var(--muted)}
+.qz-badge{display:inline-block;vertical-align:middle;font-size:10.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg);margin-left:4px;white-space:nowrap}
+.qz-badge.l3,.qz-badge.l4{background:var(--star);color:#0e0e11;border-color:var(--star)}
+.board{display:grid;gap:6px}
+.brow{display:grid;grid-template-columns:30px 34px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+.brow.me{border-color:#fff}
+.brow .rk{font-weight:900;text-align:center;font-size:16px}
+.brow .bb-av{width:34px;height:34px;font-size:12px}
+.brow .bn{min-width:0}
+.brow .bn b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .bn small{color:var(--muted);font-size:12.5px}
+.brow .bp{font-size:18px;font-weight:900;text-align:right;line-height:1.1}
+.brow .bp small{display:block;font-size:10.5px;color:var(--muted);font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.qz-play{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(16px,3vw,26px);display:grid;gap:16px}
+.qz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:800;color:var(--muted);font-size:14px}
+.qz-top b{color:var(--fg)}
+.qz-timer{height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.qz-timer i{display:block;height:100%;background:#fff;border-radius:inherit;transition:width .25s linear}
+.qz-timer.low i{background:var(--danger)}
+.qz-media{border-radius:12px;overflow:hidden;background:#000;aspect-ratio:16/9;max-height:340px;width:100%}
+.qz-media img{width:100%;height:100%;object-fit:cover;display:block}
+.qz-syn{background:var(--bg-2);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-weight:500;font-style:italic;line-height:1.6;margin:0}
+.qz-q{font-size:clamp(20px,3vw,26px)}
+.qz-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qz-opt{display:flex;align-items:center;gap:10px;text-align:left;padding:14px 16px;border-radius:12px;border:1px solid var(--line);background:var(--bg-2);font-weight:800;font-size:15px;color:var(--fg);transition:border-color .15s,background .15s}
+.qz-opt kbd{font:inherit;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:0 6px;flex:none}
+.qz-opt:not(:disabled):hover{border-color:#fff}
+.qz-opt.ok{background:rgba(74,222,128,.14);border-color:var(--seen);color:var(--seen)}
+.qz-opt.bad{background:rgba(248,113,113,.14);border-color:var(--danger);color:var(--danger)}
+.qz-opt:disabled{cursor:default}
+@media (max-width:560px){.qz-opts{grid-template-columns:minmax(0,1fr)}}
+.qz-res{justify-items:center;text-align:center}
+.qz-big{font-size:clamp(56px,10vw,88px);font-weight:900;line-height:1}
+.qz-recap{display:grid;gap:6px;text-align:left;width:100%}
+.qz-rc{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--bg-2);font-size:14px}
+.qz-rc .y{color:var(--seen);font-weight:900}
+.qz-rc .n{color:var(--danger);font-weight:900}
+.qz-rc small{color:var(--muted)}
+.podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:760px}
+.pod{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;justify-items:center;gap:6px;text-align:center;min-width:0}
+.pod.p1{border-color:var(--star);box-shadow:0 0 0 1px var(--star)}
+.pod .md{font-size:30px;line-height:1}
+.pod b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod small{color:var(--muted);font-size:12.5px}
+@media (max-width:560px){.podium{grid-template-columns:minmax(0,1fr)}}
+
+/* ---------- messagerie ---------- */
+.chat-fab{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:35;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.chat-fab svg{width:26px;height:26px}
+.chat-fab:hover{background:var(--accent-hover)}
+.chat-fab .nt-dot{top:0;right:0}
+.chat-panel{position:fixed;right:max(18px,env(safe-area-inset-right,0px));bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:36;width:min(380px,calc(100vw - 24px));height:min(560px,calc(100dvh - 120px));background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.65);display:grid;grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;animation:bubbleIn .18s cubic-bezier(.2,.8,.2,1);transform-origin:bottom right}
+@media (prefers-reduced-motion:reduce){.chat-panel{animation:none}}
+.ch-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ch-head b{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:16px}
+.ch-head .bb-av{width:32px;height:32px;font-size:12px}
+.ch-x{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);display:grid;place-items:center;padding:0;font-size:16px;flex:none;color:var(--fg)}
+.ch-x svg{width:17px;height:17px}
+.ch-body{overflow:auto;padding:10px;display:grid;align-content:start;gap:4px}
+.ch-peer{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:10px;background:none;border:0;text-align:left;width:100%;color:var(--fg)}
+.ch-peer:hover{background:var(--surface-2)}
+.ch-peer .bb-av{width:36px;height:36px;font-size:13px}
+.ch-peer .pm{flex:1;min-width:0}
+.ch-peer .pm b{display:block;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-peer .pm small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch-peer .ud{width:9px;height:9px;border-radius:50%;background:var(--danger);flex:none}
+.ch-k{font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px}
+.ch-note{background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13.5px;margin:2px 0 8px}
+.cm{max-width:82%;justify-self:start;background:var(--surface-2);border-radius:14px 14px 14px 4px;padding:8px 12px;display:grid;gap:6px;margin-top:4px}
+.cm.mine{justify-self:end;background:#fff;color:#0e0e11;border-radius:14px 14px 4px 14px}
+.cm p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-weight:600;font-size:14.5px}
+.cm time{font-size:11px;opacity:.6;font-weight:700}
+.cm-film{display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.2);border:0;border-radius:10px;padding:6px;text-align:left;color:inherit;min-width:0}
+.cm.mine .cm-film{background:rgba(0,0,0,.07)}
+.cm-film .poster{width:42px;flex:none;border-radius:4px}
+.cm-film b{display:block;font-size:14px;line-height:1.2}
+.cm-film small{display:block;font-size:11.5px;opacity:.7}
+.ch-foot{border-top:1px solid var(--line);padding:10px;display:grid;gap:8px}
+.ch-input{display:flex;gap:6px;align-items:flex-end}
+.ch-input textarea{flex:1;min-height:40px;max-height:120px;resize:none;padding:9px 12px;border-radius:12px;line-height:1.4}
+.ch-input .ch-x{width:40px;height:40px}
+.ch-input .ch-x[aria-pressed="true"]{background:#fff;color:#0e0e11;border-color:#fff}
+.ch-x.send{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.ch-chip{display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;padding:6px 8px;font-size:13px}
+.ch-chip .poster{width:26px;flex:none;border-radius:3px}
+.ch-chip span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:800}
+.ch-chip .ch-x{width:26px;height:26px;font-size:14px}
+.ch-pick{display:grid;gap:6px}
+.ch-hits{display:grid;gap:2px;max-height:180px;overflow:auto}
+.ch-hit{display:flex;gap:8px;align-items:center;background:none;border:0;padding:5px;border-radius:8px;text-align:left;color:var(--fg)}
+.ch-hit:hover{background:var(--surface-2)}
+.ch-hit .poster{width:28px;flex:none;border-radius:3px}
+.ch-hit small{color:var(--muted)}
+.ch-empty{padding:20px 12px;color:var(--muted);text-align:center;display:grid;gap:10px;justify-items:center;font-weight:600}
+@media (max-width:560px){
+  .chat-panel{right:8px;left:8px;width:auto;bottom:calc(78px + env(safe-area-inset-bottom,0px));height:calc(100dvh - 150px)}
+  .chat-fab{width:52px;height:52px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}
+}
 </style>
 </head>
 <body>
@@ -656,14 +840,20 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
     <a class="logo" href="#accueil" aria-label="Filmory, accueil" title="Accueil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5v17l15-8.5z"/></svg><b>Filmory</b></a>
     <nav class="tabs" aria-label="Sections">
       <a href="#parcourir" data-v="parcourir">Films &amp; séries</a>
+      <a href="#watchlist" data-v="watchlist">Watchlist</a>
       <a href="#journal" data-v="journal">Journal</a>
       <a href="#collection" data-v="collection">Collection</a>
       <a href="#filmdumois" data-v="filmdumois" id="navVote" hidden>Vote</a>
-
+      <a href="#quiz" data-v="quiz">Quiz</a>
       <a href="#critiques" data-v="critiques">Critiques</a>
+      <a href="#admin" data-v="admin" id="navAdmin" hidden>Admin</a>
     </nav>
     <label class="hsearch"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="hq" type="search" placeholder="Rechercher un film, une série…" aria-label="Rechercher"></label>
     <span class="sync" id="sync" data-s="local">Sur cet appareil</span>
+    <span class="nt-wrap" id="ntWrap" hidden>
+      <button class="icon-btn" id="ntBtn" aria-label="Notifications" aria-haspopup="true" aria-expanded="false" aria-controls="ntPanel"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="nt-dot" id="ntCount" hidden></span></button>
+      <div class="bubble nt-panel" id="ntPanel" aria-label="Notifications" hidden></div>
+    </span>
     <span class="me-wrap">
       <button class="me-btn" id="meBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="meMenu"><span class="av" id="meAv"></span><span id="meLbl">Mon profil</span></button>
       <div class="bubble" id="meMenu" role="menu" aria-label="Mon profil" hidden></div>
@@ -682,6 +872,10 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 <dialog id="dlgAdd" aria-label="Ajouter un titre"><button class="dlg-close" data-close aria-label="Fermer">×</button><div class="dlg" id="addForm"></div></dialog>
 <datalist id="dirList"></datalist>
 <datalist id="actList"></datalist>
+<div class="chat" id="chat" hidden>
+  <button class="chat-fab" id="chatFab" aria-label="Messages" aria-expanded="false" aria-controls="chatPanel"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg><span class="nt-dot" id="chatCount" hidden></span></button>
+  <section class="chat-panel" id="chatPanel" aria-label="Messages" hidden></section>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script>
@@ -922,7 +1116,7 @@ const defProfile = () => ({name:"",handle:"",bio:"",avatar:"",accent:"blanc",ban
 const pref = (k, def = true) => { const v = state.profile.prefs?.[k]; return v === undefined ? def : v; };
 const defLib = () => ({entries:{},custom:[],reco:[],tickets:[],meta:{},filmo:{}});
 // « Nos recommandations » : liste partagée (db) quand elle est disponible, sinon gardée sur cet appareil
-const reco = {ids:[], remote:false, canEdit:true, ref:null};
+const reco = {ids:[], featured:[], remote:false, canEdit:true, ref:null};
 // Film du mois : un vote par personne et par mois (clé AAAA-MM)
 const votes = {docs:[], remote:false, myId:null, ref:null};
 const monthKey = () => today().slice(0, 7);
@@ -965,7 +1159,7 @@ function toggleReco(id) {
   if (!reco.canEdit) return null;
   const cur = recoIds(), on = !cur.includes(id);
   const next = on ? [id, ...cur] : cur.filter(x => x !== id);
-  if (reco.remote) { reco.ids = next; reco.ref.set({ids: next}).catch(() => toast("La recommandation n'a pas pu être enregistrée.")); }
+  if (reco.remote) { reco.ids = next; saveReco(); }
   else { state.lib.reco = next; save("lib"); }
   return on;
 }
@@ -1022,8 +1216,8 @@ async function connect() {
     let firstReco = true;
     reco.ref.onSnapshot(snap => {
       const local = state.lib.reco || [];
-      if (!snap.exists && firstReco && reco.canEdit && local.length) { reco.ids = local.slice(); reco.ref.set({ids: reco.ids}).catch(() => {}); }
-      else reco.ids = snap.exists ? [...(snap.data().ids || [])] : [];
+      if (!snap.exists && firstReco && reco.canEdit && local.length) { reco.ids = local.slice(); reco.ref.set({ids: reco.ids, featured: []}).catch(() => {}); }
+      else { reco.ids = snap.exists ? [...(snap.data().ids || [])] : []; reco.featured = snap.exists ? [...(snap.data().featured || [])] : []; }
       reco.remote = true; firstReco = false; renderAll();
     }, () => {});
     // votes du film du mois : chacun écrit votes/<son id>, tout le monde lit le décompte
@@ -1040,6 +1234,7 @@ async function connect() {
         if (snap.exists) {
           if (!dirty[k] && !snap.metadata.hasPendingWrites) { state[k] = normalize(k, JSON.parse(JSON.stringify(snap.data()))); writeLocal(); renderAll(); }
         } else if (first && hasContent(k)) { flush(k); }
+        if (first && k === "lib") setTimeout(backfillReviews, 500);
         first = false;
         if (!dirty[k]) setStatus("synced");
       }, () => setStatus("error", "Synchronisation interrompue"));
@@ -1080,8 +1275,8 @@ function poster(f, {mini=false, badge=true} = {}) {
 }
 
 /* ===================== Views ===================== */
-const VIEWS = ["accueil","parcourir","journal","collection","filmdumois","critiques","profil","parametres","amis","support","abonnement","statistiques"];
-const ui = {view:"accueil", q:"", type:"all", genre:"", sort:"popular", jType:"all", jTab:"vus", cType:"all", cSort:"date", cMode:"shelf", cDir:null};
+const VIEWS = ["accueil","parcourir","watchlist","journal","collection","filmdumois","quiz","critiques","admin","profil","parametres","amis","support","abonnement","statistiques"];
+const ui = {view:"accueil", q:"", type:"all", genre:"", sort:"popular", jType:"all", wType:"all", wSort:"added", rTab:"mine", cType:"all", cSort:"date", cMode:"shelf", cDir:null};
 
 function renderAll() {
   const v = (location.hash || "#accueil").slice(1);
@@ -1089,7 +1284,7 @@ function renderAll() {
   $$("nav.tabs a").forEach(a => a.dataset.v === ui.view ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
   renderMeBtn();
   $("#main").className = ui.view === "accueil" ? "home" : "";
-  ({accueil:viewHome, parcourir:viewBrowse, journal:viewJournal, collection:viewCollection, filmdumois:viewVote, critiques:viewReviews, profil:viewProfile, parametres:viewSettings, amis:viewFriends, support:viewSupport, abonnement:viewPlans, statistiques:viewStats})[ui.view]();
+  ({accueil:viewHome, parcourir:viewBrowse, watchlist:viewWatchlist, journal:viewJournal, collection:viewCollection, filmdumois:viewVote, quiz:viewQuiz, critiques:viewReviews, admin:viewAdmin, profil:viewProfile, parametres:viewSettings, amis:viewFriends, support:viewSupport, abonnement:viewPlans, statistiques:viewStats})[ui.view]();
   refreshDatalists(); onScroll();
 }
 function renderMeBtn() {
@@ -1107,14 +1302,16 @@ function cardHTML(f, sub = "") {
 let heroIdx = 0, heroTimer = null;
 function viewHome() {
   if (homeState !== "ready") {
-    loadHome();
+    if (homeState === "idle") loadHome(); // après une erreur, on attend « Réessayer » au lieu de boucler
     $("#main").innerHTML = homeState === "error"
       ? `<div class="narrow" style="padding-top:60px"><div class="empty"><h3>TMDB ne répond pas</h3><p>${esc(homeError || "Impossible de charger les films.")}</p><button class="btn primary" data-act="retry-home">Réessayer</button></div></div>`
       : `<div class="narrow" style="padding-top:80px"><p class="muted" style="font-size:16px">Chargement des films du moment…</p></div>`;
     return;
   }
   const now = NOW.slice();
-  const hero = now.slice(0, 7);
+  // « À la une » (choisis dans l'onglet Admin) passent en premier dans le bandeau
+  const feat = reco.featured.map(byId).filter(f => f && f.img && PURL[f.img]);
+  const hero = [...new Set([...feat, ...now])].slice(0, 7);
   heroIdx = Math.min(heroIdx, hero.length - 1);
   const t = today();
   const curWeek = SORTIES.filter(s => s.date <= t).pop()?.date || SORTIES[0]?.date;
@@ -1130,11 +1327,11 @@ function viewHome() {
   $("#main").innerHTML = `
     <section class="hero" aria-label="Films du moment">
       <div class="hero-track" id="heroTrack">${hero.map((f,i) => `
-        <button class="hp ${i===heroIdx?"on":""}" data-open="${esc(f.id)}" data-hi="${i}" aria-label="${esc(f.title)}, en salle depuis le ${fmtDate(f.release)}">
+        <button class="hp ${i===heroIdx?"on":""}" data-open="${esc(f.id)}" data-hi="${i}" aria-label="${esc(f.title)}">
           <img src="${PURL[f.img] || ""}" alt="">
           <span class="hp-info"><span class="hp-title">${esc(f.title)}</span><span class="hp-meta">${[esc(f.genre), f.year].filter(Boolean).join(" · ")}</span></span>
         </button>`).join("")}</div>
-      <span class="hero-badge">Films du moment</span>
+      <span class="hero-badge">${feat.length ? "À la une" : "Films du moment"}</span>
       <div class="dots" role="group" aria-label="Choisir un film">${hero.map((f,i) => `<button data-dot="${i}" aria-label="${esc(f.title)}" aria-current="${i===heroIdx}"></button>`).join("")}</div>
     </section>
 
@@ -1151,6 +1348,11 @@ function viewHome() {
           <div class="row-btns"><button class="btn primary" data-open="${esc(win.f.id)}">Voir la fiche</button></div>
         </div>
       </div>` : `<div class="row-empty">Aucun vote pour ${monthName()} pour l'instant. Les votes se font dans l'onglet Vote.</div>`}
+    </section>` : ""}
+
+    ${auth.sb ? `<section aria-labelledby="podT">
+      <h2 class="sec-title" id="podT">${ICON.trophy} Champions du quiz <span class="muted" style="font-weight:700;font-size:15px;text-transform:capitalize">· ${monthName()}</span><a class="more" href="#quiz">Jouer au quiz</a></h2>
+      <div id="homePodium">${podiumHTML()}</div>
     </section>` : ""}
 
     <section class="cal" aria-labelledby="calT">
@@ -1244,7 +1446,8 @@ function viewBrowse() {
   if (!q && ui.type === "all" && state.lib.custom.length) list = [...state.lib.custom, ...list];
   const gmap = ui.type === "serie" ? GENRES_T : GENRES_M;
   const genreOk = !q && (ui.type === "film" || ui.type === "serie");
-  $("#main").innerHTML = `<div class="narrow">
+  const side = !auth.ready || auth.sb;
+  $("#main").innerHTML = `<div class="narrow ${side ? "br-layout" : ""}"><div class="br-main">
     <div class="view-head"><div><div class="eyebrow">Catalogue TMDB</div><h1>${q ? `Résultats pour « ${esc(ui.q)} »` : "Films &amp; séries"}</h1></div>
       <button class="btn" data-act="add-title">＋ Ajouter un titre</button></div>
     <div class="toolbar">
@@ -1258,6 +1461,8 @@ function viewBrowse() {
       : browse.error ? `<div class="empty"><h3>TMDB ne répond pas</h3><p>Vérifiez votre connexion puis réessayez.</p><button class="btn primary" data-act="retry-browse">Réessayer</button></div>`
       : !list.length ? `<div class="empty"><h3>Aucun titre trouvé</h3><p>Rien ne correspond${q ? ` à « ${esc(ui.q)} »` : ""} dans TMDB. Vous pouvez l'ajouter vous-même au catalogue.</p><button class="btn primary" data-act="add-title">Ajouter${q ? ` « ${esc(ui.q)} »` : " un titre"}</button></div>`
       : browse.page < browse.pages ? `<div style="display:flex;justify-content:center;margin-top:28px"><button class="btn" data-act="more-browse">Afficher plus</button></div>` : ""}
+  </div>
+  ${side ? `<aside class="side-rev" aria-labelledby="sideRevT"><h2 class="sec-title" id="sideRevT">${ICON.heart} Critiques les plus aimées</h2><div id="sideReviews">${topReviewsHTML()}</div></aside>` : ""}
   </div>`;
   $("#genre") && ($("#genre").onchange = e => { ui.genre = e.target.value; viewBrowse(); });
   $("#sort") && ($("#sort").onchange = e => { ui.sort = e.target.value; viewBrowse(); });
@@ -1271,14 +1476,11 @@ function emptyStart(title, text) {
 function viewJournal() {
   const all = watchedList();
   const list = all.filter(x => ui.jType === "all" || x.f.t === ui.jType).sort((a,b) => (b.e.date||"").localeCompare(a.e.date||""));
-  const wl = Object.entries(state.lib.entries).filter(([id,e]) => e.watchlist && !e.watched && byId(id)).map(([id]) => byId(id));
+  const wl = watchlistItems().length;
   const groups = {};
   list.forEach(x => { const k = x.e.date ? x.e.date.slice(0,7) : "sans-date"; (groups[k] ||= []).push(x); });
-  const hours = Math.round(all.filter(x => typeof x.f.len === "number").reduce((s,x) => s + x.f.len, 0) / 60);
   let body;
-  if (ui.jTab === "avoir") {
-    body = wl.length ? `<div class="grid">${wl.map(f => cardHTML(f, `${f.year} · ${esc(f.by[0])}`)).join("")}</div>` : `<div class="empty"><h3>Liste vide</h3><p>Ouvrez une fiche et choisissez « À voir » pour la garder ici.</p><a class="btn primary" href="#parcourir">Parcourir le catalogue</a></div>`;
-  } else if (!all.length) {
+  if (!all.length) {
     body = emptyStart("Votre journal est vide", "Chaque film ou série marqué comme vu apparaît ici, classé par date de visionnage, avec votre note.");
   } else {
     body = Object.keys(groups).sort().reverse().map(k => `
@@ -1292,11 +1494,36 @@ function viewJournal() {
   $("#main").innerHTML = `<div class="narrow">
     <div class="view-head"><div><div class="eyebrow">${all.length} titre${all.length>1?"s":""} vu${all.length>1?"s":""}</div><h1>Journal</h1></div></div>
     <div class="toolbar">
-      <div class="seg" role="group" aria-label="Liste">${[["vus","Vus"],["avoir",`À voir (${wl.length})`]].map(([k,l]) => `<button data-jtab="${k}" aria-pressed="${ui.jTab===k}">${l}</button>`).join("")}</div>
-      ${ui.jTab === "vus" ? `<div class="seg" role="group" aria-label="Type">${[["all","Tout"],["film","Films"],["serie","Séries"]].map(([k,l]) => `<button data-jtype="${k}" aria-pressed="${ui.jType===k}">${l}</button>`).join("")}</div>` : ""}
+      <div class="seg" role="group" aria-label="Type">${[["all","Tout"],["film","Films"],["serie","Séries"]].map(([k,l]) => `<button data-jtype="${k}" aria-pressed="${ui.jType===k}">${l}</button>`).join("")}</div>
+      <a class="btn ghost small" href="#watchlist">Watchlist${wl ? ` (${wl})` : ""} →</a>
     </div>${body}</div>`;
-  $$("[data-jtab]").forEach(b => b.onclick = () => { ui.jTab = b.dataset.jtab; viewJournal(); });
   $$("[data-jtype]").forEach(b => b.onclick = () => { ui.jType = b.dataset.jtype; viewJournal(); });
+}
+
+/* ----- Watchlist ----- */
+const watchlistItems = () => Object.entries(state.lib.entries).filter(([id, e]) => e.watchlist && !e.watched && byId(id)).map(([id, e]) => ({f: byId(id), e}));
+function viewWatchlist() {
+  const all = watchlistItems();
+  const nF = all.filter(x => x.f.t === "film").length, nS = all.length - nF;
+  const sorters = {
+    added:(a,b) => (b.e.wlAt||"").localeCompare(a.e.wlAt||""),
+    title:(a,b) => a.f.title.localeCompare(b.f.title, "fr"),
+    year:(a,b) => (b.f.year||0) - (a.f.year||0),
+    genre:(a,b) => (a.f.genre||"~").localeCompare(b.f.genre||"~", "fr") || a.f.title.localeCompare(b.f.title, "fr"),
+  };
+  const list = all.filter(x => ui.wType === "all" || x.f.t === ui.wType).sort(sorters[ui.wSort] || sorters.added);
+  const sub = ({f, e}) => [kindLabel(f.t), f.year, e.wlAt ? "ajouté le " + fmtDate(e.wlAt, {day:"numeric", month:"short"}) : ""].filter(Boolean).join(" · ");
+  $("#main").innerHTML = `<div class="narrow">
+    <div class="view-head"><div><div class="eyebrow">${all.length} titre${all.length>1?"s":""} à voir</div><h1>Watchlist</h1></div></div>
+    ${all.length ? `<div class="toolbar">
+      <div class="seg" role="group" aria-label="Type">${[["all",`Tout (${all.length})`],["film",`Films (${nF})`],["serie",`Séries (${nS})`]].map(([k,l]) => `<button data-wtype="${k}" aria-pressed="${ui.wType===k}">${l}</button>`).join("")}</div>
+      <select class="input" id="wSort" style="width:auto" aria-label="Trier">${[["added","Ajoutés récemment"],["title","Titre A–Z"],["year","Année de sortie"],["genre","Genre"]].map(([k,l]) => `<option value="${k}" ${k===ui.wSort?"selected":""}>${l}</option>`).join("")}</select>
+    </div>
+    ${list.length ? `<div class="grid">${list.map(x => cardHTML(x.f, sub(x))).join("")}</div>` : `<p class="muted">Aucun${ui.wType === "serie" ? "e série" : " film"} dans votre watchlist pour l'instant.</p>`}`
+    : `<div class="empty"><h3>Votre watchlist est vide</h3><p>Ouvrez la fiche d'un film ou d'une série et touchez « À voir » sur le disque : il arrive ici. Dès que vous le marquez comme vu, il passe dans votre journal.</p><a class="btn primary" href="#parcourir">Parcourir le catalogue</a></div>`}
+  </div>`;
+  $$("[data-wtype]").forEach(b => b.onclick = () => { ui.wType = b.dataset.wtype; viewWatchlist(); });
+  $("#wSort") && ($("#wSort").onchange = e => { ui.wSort = e.target.value; viewWatchlist(); });
 }
 
 /* ----- Portfolios (Collection) ----- */
@@ -1352,6 +1579,7 @@ function toggleMenu(force) {
   const menu = $("#meMenu"), btn = $("#meBtn");
   const open = force ?? menu.hidden;
   if (open) {
+    toggleNotifs(false);
     const p = state.profile, name = p.name || viewerName || "Cinéphile";
     const item = (href, icon, label) => `<a role="menuitem" href="${href}" tabindex="-1">${icon}<span>${label}</span></a>`;
     menu.innerHTML = `
@@ -1365,6 +1593,7 @@ function toggleMenu(force) {
       ${item("#abonnement", ICON.star, `Abonnement <em>${planOf().creator ? "Créateur" : esc(planOf().name)}</em>`)}
       ${FEATURES.social ? item("#support", ICON.help, "Support") : ""}
       <hr>
+      ${item("#watchlist", ICON.eye, "Watchlist")}
       ${item("#collection", ICON.film, "Collection")}
       ${item("#critiques", ICON.pen, "Critiques")}
       ${item("#journal", ICON.cal, "Journal")}
@@ -1469,7 +1698,7 @@ function viewFriends() {
     return `<article class="friend">
       <div class="fr-head"><span class="bb-av lg">${av ? `<img alt="" src="${esc(av)}">` : esc(initials(name))}</span>
         <span style="min-width:0;flex:1"><b class="fr-name"></b><small class="muted">${d?.handle ? "@" + esc(d.handle) : ""} ${planBadge(d?.plan)}</small></span>
-        <button class="btn ghost small" data-unfriend="${esc(id)}">Retirer</button></div>
+        <button class="btn small" data-chat-with="${esc(id)}">Message</button><button class="btn ghost small" data-unfriend="${esc(id)}">Retirer</button></div>
       ${d ? `<div class="fr-stats"><span><b class="num">${d.films}</b> films</span><span><b class="num">${d.series}</b> séries</span><span><b class="num">${d.reviews}</b> critiques</span><span><b class="num">${d.avg ? String(d.avg).replace(".", ",") : "–"}</b> moyenne</span></div>
         ${vote && byId(vote) ? `<div class="fr-vote">${ICON.trophy} A voté pour <button class="linkish" data-open="${esc(vote)}">${esc(byId(vote).title)}</button> ce mois-ci</div>` : ""}
         ${favs.length ? `<div><span class="fr-k">Films favoris</span><div class="fr-posters">${favs.map(f => `<button class="card" data-open="${esc(f.id)}" aria-label="${esc(f.title)}">${poster(f, {mini:true})}</button>`).join("")}</div></div>` : ""}
@@ -1503,7 +1732,7 @@ function viewFriends() {
     const b = ev.target.closest("[data-addfriend]"); if (!b) return;
     const h = friendHits[+b.dataset.addfriend];
     state.profile.friends = [...new Set([...state.profile.friends, h.id])];
-    save("profile"); toast(`${h.name} ajouté à vos amis`); loadFriends(true); viewFriends();
+    save("profile"); toast(`${h.name} ajouté à vos amis`); notify(h.id, "friend"); loadFriends(true); viewFriends();
   };
   $$("[data-unfriend]").forEach(b => b.onclick = () => {
     state.profile.friends = state.profile.friends.filter(x => x !== b.dataset.unfriend);
@@ -1803,7 +2032,13 @@ function viewPlans() {
 
 /* ----- Film du mois ----- */
 function viewVote() {
-  if (homeState !== "ready") { loadHome(); $("#main").innerHTML = `<div class="narrow" style="padding-top:60px"><p class="muted">Chargement des films à l'affiche…</p></div>`; return; }
+  if (homeState !== "ready") {
+    if (homeState === "idle") loadHome();
+    $("#main").innerHTML = homeState === "error"
+      ? `<div class="narrow" style="padding-top:60px"><div class="empty"><h3>TMDB ne répond pas</h3><p>${esc(homeError || "Impossible de charger les films.")}</p><button class="btn primary" data-act="retry-home">Réessayer</button></div></div>`
+      : `<div class="narrow" style="padding-top:60px"><p class="muted">Chargement des films à l'affiche…</p></div>`;
+    return;
+  }
   const k = monthKey(), c = tally(k), mine = myVote(k);
   const total = Object.values(c).reduce((s,x) => s + x, 0), max = Math.max(1, ...Object.values(c), 0);
   const cands = voteCandidates().sort((a,b) => (c[b.id] || 0) - (c[a.id] || 0));
@@ -1965,10 +2200,14 @@ function reviewHTML(f, e) {
 function viewReviews() {
   const list = Object.entries(state.lib.entries).filter(([id,e]) => e.review && byId(id)).map(([id,e]) => ({f:byId(id), e}))
     .sort((a,b) => (b.e.reviewedAt||"").localeCompare(a.e.reviewedAt||""));
+  const tab = auth.sb ? ui.rTab : "mine";
   $("#main").innerHTML = `<div class="narrow">
-    <div class="view-head"><div><div class="eyebrow">${list.length} critique${list.length>1?"s":""}</div><h1>Critiques</h1></div></div>
-    ${list.length ? `<div class="reviews">${list.map(x => reviewHTML(x.f, x.e)).join("")}</div>` :
+    <div class="view-head"><div><div class="eyebrow">${list.length} critique${list.length>1?"s":""} écrite${list.length>1?"s":""}</div><h1>Critiques</h1></div></div>
+    ${auth.sb ? `<div class="toolbar"><div class="seg" role="group" aria-label="Critiques">${[["mine","Mes critiques"],["top","Les plus aimées"]].map(([k,l]) => `<button data-rtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join("")}</div></div>` : ""}
+    ${tab === "top" ? `<div style="max-width:820px">${topReviewsHTML()}</div>`
+      : list.length ? `<div class="reviews">${list.map(x => reviewHTML(x.f, x.e)).join("")}</div>` :
       emptyStart("Aucune critique", "Ouvrez la fiche d'un film ou d'une série que vous avez vu et écrivez ce que vous en avez pensé. Vos critiques s'affichent ici et sur votre profil.")}</div>`;
+  $$("[data-rtab]").forEach(b => b.onclick = () => { ui.rTab = b.dataset.rtab; if (ui.rTab === "top") loadTopReviews(true); viewReviews(); });
 }
 
 /* ----- Profil ----- */
@@ -1980,6 +2219,7 @@ function personRow(name, role) {
     <span><span class="pn">${esc(name)}</span><span class="pc"> · ${seen ? `${seen} titre${seen>1?"s":""} vu${seen>1?"s":""}` : titles.length ? `${titles.length} au catalogue` : "hors catalogue"}</span></span></div>`;
 }
 function viewProfile() {
+  loadBoard();
   const p = state.profile, all = watchedList();
   const films = all.filter(x => x.f.t === "film"), series = all.filter(x => x.f.t === "serie");
   const year = String(new Date().getFullYear());
@@ -2002,7 +2242,7 @@ function viewProfile() {
     <div class="banner" style="--b1:${b1};--b2:${b2};${p.bannerImg ? `height:auto;aspect-ratio:1200/${p.bannerH || 320}` : ""}">${bimg}</div>
     <div class="pf-head">
       <div class="avatar">${p.avatar ? `<img alt="Photo de profil" src="${esc(p.avatar)}">` : esc(initials(name))}</div>
-      <div class="pf-id"><h1>${esc(name)}</h1><div class="handle">@${esc(p.handle || "cinephile")} ${planBadge(badgeId())}</div></div>
+      <div class="pf-id"><h1>${esc(name)}</h1><div class="handle">@${esc(p.handle || "cinephile")} ${planBadge(badgeId())} ${myQuizBadge()}</div></div>
       <button class="btn primary" data-act="edit-profile">Modifier le profil</button>
     </div>
     ${p.bio ? `<p class="pf-bio">${esc(p.bio)}</p>` : ""}
@@ -2114,7 +2354,7 @@ function enterTrailer() {
   const zoom = dvd.animate(steps.map(k => ({offset:k.offset, transform:`scale(${k.sc}) rotate(${k.rot}deg)`})), {duration:D*T, easing:"cubic-bezier(.45,0,.55,1)", fill:"forwards"});
   dive.anims.push(zoom);
   dive.anims.push(iris.animate(steps.map(k => ({offset:k.offset, transform:`scale(${k.sc})`})), {duration:D*T, easing:"cubic-bezier(.45,0,.55,1)", fill:"forwards"}));
-  dive.anims.push($("#detail .booklet").animate([{opacity:1}, {opacity:0}], {duration:300*T, fill:"forwards"}));
+  $$("#detail .booklet, #detail .comm").forEach(el => dive.anims.push(el.animate([{opacity:1}, {opacity:0}], {duration:300*T, fill:"forwards"})));
 
   const me = dive;
   const openTheater = () => {
@@ -2274,17 +2514,22 @@ function renderDetail(animate = false) {
             </div>
           </div>
           <div class="sl-row sl-foot"><span class="sl-k">Date</span><span class="sl-v">${e.reviewedAt ? `Critique publiée le ${fmtDate(e.reviewedAt)}` : fmtDate(today())}</span>
-            ${FEATURES.social && reco.canEdit ? `<button class="btn small ${recoIds().includes(f.id) ? "primary" : "ghost"}" data-act="reco" aria-pressed="${recoIds().includes(f.id)}" style="margin-left:auto">${recoIds().includes(f.id) ? "★ Dans nos recommandations" : "☆ Recommander"}</button>` : ""}
-            ${f.custom ? `<button class="btn ghost danger small" data-act="del-title" style="margin-left:auto">${confirmDelete ? "Confirmer : supprimer ce titre et ses données" : "Supprimer ce titre"}</button>` : ""}</div>
+            <span class="row-btns" style="margin-left:auto">
+            ${auth.sb && !f.custom ? `<button class="btn small ghost" data-act="share-friend">${ICON.chat} Conseiller à un ami</button>` : ""}
+            ${FEATURES.social && reco.canEdit ? `<button class="btn small ${recoIds().includes(f.id) ? "primary" : "ghost"}" data-act="reco" aria-pressed="${recoIds().includes(f.id)}">${recoIds().includes(f.id) ? "★ Dans nos recommandations" : "☆ Recommander"}</button>` : ""}
+            ${f.custom ? `<button class="btn ghost danger small" data-act="del-title">${confirmDelete ? "Confirmer : supprimer ce titre et ses données" : "Supprimer ce titre"}</button>` : ""}</span></div>
         </div>
       </div>
+      ${auth.sb && !f.custom ? `<section class="comm" aria-labelledby="commT"><h2 class="sec-title" id="commT">${ICON.pen} Critiques de la communauté</h2><div id="commReviews">${commInner(f.id)}</div></section>` : ""}
     </div>`;
+  if (auth.sb && !f.custom) loadComm(f.id);
   $("#starSlot").appendChild(starInput(e.rating || 0, v => {
     const before = pfBefore(f);
     const en = ensure(f.id); en.rating = v;
     setTimeout(() => checkComplete(f, before), 0);
     if (v) { en.watched = true; en.date ||= today(); en.watchlist = false; }
     prune(f.id); save("lib"); refreshDetailBits(); renderAll();
+    if (E(f.id)?.review) pubReview(f.id);
     $("#starSlot .star-input")?.focus();
   }));
   $("#dEps") && ($("#dEps").onchange = ev => {
@@ -2327,7 +2572,11 @@ function detailAction0(act) {
       }
     } else { prune(f.id); save("lib"); }
   }
-  else if (act === "list") { const en = ensure(f.id); en.watchlist = !en.watchlist; prune(f.id); save("lib"); }
+  else if (act === "list") { const en = ensure(f.id); en.watchlist = !en.watchlist; if (en.watchlist) en.wlAt = new Date().toISOString(); else delete en.wlAt; prune(f.id); save("lib"); toast(en.watchlist ? "Ajouté à votre watchlist" : "Retiré de votre watchlist"); }
+  else if (act === "share-friend") {
+    if (!auth.user) { openAuth("login"); toast("Connectez-vous pour conseiller un film à vos amis."); return; }
+    $("#dlgDetail").close(); openChat(null, f); return;
+  }
   else if (act === "reco") { const on = toggleReco(f.id); if (on != null) toast(on ? "Ajouté à nos recommandations" : "Retiré de nos recommandations"); }
   else if (act === "pin") {
     const k = f.t === "serie" ? "favSeries" : "favFilms";
@@ -2341,9 +2590,11 @@ function detailAction0(act) {
     if (!text) { toast("Écrivez quelques mots avant de publier."); $("#dReview").focus(); return; }
     const en = ensure(f.id); const isNew = !en.review;
     en.review = text; en.spoiler = $("#dSpoil").checked; en.reviewedAt = new Date().toISOString(); en.watched = true; en.date ||= today(); en.watchlist = false; delete en.demo;
-    save("lib"); toast(isNew ? "Critique publiée" : "Critique mise à jour"); renderDetail(); renderAll(); if (!reducedMotion()) $("#detail .stick.top")?.animate([{transform:"rotate(-4deg)"},{transform:"rotate(-11deg)", offset:.35},{transform:"rotate(0deg)", offset:.52},{transform:"rotate(-1.5deg)", offset:.62},{transform:"rotate(0deg)", offset:.72},{transform:"rotate(-4deg)"}], {duration:900, easing:"cubic-bezier(.3,.6,.3,1)"}); return;
+    save("lib"); toast(isNew ? "Critique publiée" : "Critique mise à jour"); renderDetail(); renderAll();
+    pubReview(f.id).then(() => loadComm(f.id, true));
+    if (!reducedMotion()) $("#detail .stick.top")?.animate([{transform:"rotate(-4deg)"},{transform:"rotate(-11deg)", offset:.35},{transform:"rotate(0deg)", offset:.52},{transform:"rotate(-1.5deg)", offset:.62},{transform:"rotate(0deg)", offset:.72},{transform:"rotate(-4deg)"}], {duration:900, easing:"cubic-bezier(.3,.6,.3,1)"}); return;
   }
-  else if (act === "del-review") { const en = ensure(f.id); en.review = ""; en.spoiler = false; en.reviewedAt = ""; prune(f.id); save("lib"); toast("Critique supprimée"); renderDetail(); renderAll(); return; }
+  else if (act === "del-review") { const en = ensure(f.id); en.review = ""; en.spoiler = false; en.reviewedAt = ""; prune(f.id); save("lib"); toast("Critique supprimée"); renderDetail(); renderAll(); pubReview(f.id).then(() => loadComm(f.id, true)); return; }
   else if (act === "del-title") {
     if (!confirmDelete) { confirmDelete = true; refreshDetailBits(); return; }
     state.lib.custom = state.lib.custom.filter(x => x.id !== f.id); delete state.lib.entries[f.id];
@@ -2571,6 +2822,8 @@ document.addEventListener("click", ev => {
   const close = t.closest("[data-close]"); if (close) { const dl = close.closest("dialog"); dl.id === "dlgDetail" ? closeDetail() : dl.close(); return; }
   const fp = t.closest("[data-fav-person]"); if (fp) { toggleFavPerson(fp.dataset.favPerson, fp.dataset.name); refreshDetailBits(); renderAll(); return; }
   const flt = t.closest("[data-filter]"); if (flt) { ui.type = flt.dataset.filter; }
+  const lk = t.closest("[data-rlike]"); if (lk) { toggleLike(lk.dataset.rlike); return; }
+  const cw = t.closest("[data-chat-with]"); if (cw) { openChat(cw.dataset.chatWith); return; }
   const a = t.closest("[data-act]"); if (!a) return;
   const act = a.dataset.act;
   if (act === "add-title") openAdd();
@@ -2587,6 +2840,7 @@ document.addEventListener("click", ev => {
   }
   else if (act === "reset-settings") {
     if (!resetArmed) { resetArmed = true; viewSettings(); return; }
+    if (auth.user) auth.sb.from("reviews").delete().eq("user_id", auth.user.id).then(() => {});
     resetArmed = false; state = {profile: defProfile(), lib: defLib()}; save("profile"); save("lib");
     toast("Toutes vos données ont été effacées"); renderAll();
   }
@@ -2659,7 +2913,7 @@ const sbDB = {
         return snapOf(!!data, data ? data.data : undefined);
       },
       async set(body) {
-        if (r.kind === "reco") body = {...body, titles: titlesFor(body.ids || [])};
+        if (r.kind === "reco") body = {...body, titles: titlesFor([...(body.ids || []), ...(body.featured || [])])};
         if (r.kind === "public") body = {...body, titles: titlesFor([...(body.favFilms || []), ...(body.favSeries || []), ...(body.recent || []).map(x => x.id)])};
         const {error} = await auth.sb.from(r.table).upsert({[r.key]: r.id, data: body, updated_at: new Date().toISOString()});
         if (error) throw {code: "invalid_argument", message: error.message};
@@ -2755,8 +3009,11 @@ async function startSession(u) {
   auth.admin = !!adm;
   FEATURES.social = true;
   $("#navVote").hidden = false;
+  $("#navAdmin").hidden = !auth.admin;
   window.claude = {use: async name => name === "db" ? sbDB : name === "user" ? sbUser : null};
   await connect();
+  startNotifs(); startChat();
+  cr.topAt = 0; quiz.board.at = 0; // recharger avec « j'aime » et classement personnels
 }
 let authMode = "login";
 function openAuth(mode = authMode) {
@@ -2803,6 +3060,683 @@ async function logout() {
   await auth.sb.auth.signOut();
   location.hash = ""; location.reload();
 }
+/* ===================== Social : notifications, critiques publiques, quiz, messagerie, admin ===================== */
+// Tables créées par supabase-etape3.sql. Sans compte, le quiz se joue quand même (points gardés sur l'appareil).
+Object.assign(ICON, {
+  heart:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-9.6-9.3A5.2 5.2 0 0 1 12 6.4a5.2 5.2 0 0 1 9.6 4.8c-2.1 4.7-9.6 9.3-9.6 9.3z"/></svg>',
+  chat:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg>',
+  send:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-6 16-3-7z"/><path d="m11 13 9-9"/></svg>',
+  back:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  bolt:'<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+});
+const myId = () => auth.user?.id || null;
+const myName = () => state.profile.name || (state.profile.handle ? "@" + state.profile.handle : "") || (auth.user?.email || "").split("@")[0] || "Quelqu'un";
+const ago = iso => {
+  const s = (Date.now() - new Date(iso)) / 1000;
+  if (!(s >= 0)) return "";
+  if (s < 60) return "à l'instant";
+  if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
+  if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
+  if (s < 172800) return "hier";
+  return fmtDate(iso, {day:"numeric", month:"short"});
+};
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+// noms et photos des autres personnes (profils publics)
+const peopleCache = {};
+async function loadPeople(ids) {
+  if (!auth.user) return;
+  const miss = [...new Set(ids)].filter(id => id && !peopleCache[id]);
+  if (!miss.length) return;
+  try { Object.assign(peopleCache, await sbUser.profiles(miss)); } catch {}
+}
+const nameOf = (id, fallback = "Quelqu'un") => peopleCache[id]?.name || friendCache[id]?.name || fallback;
+function avHTML(id, name) {
+  const a = id === myId() ? state.profile.avatar : peopleCache[id]?.avatarUrl;
+  return `<span class="bb-av">${a && a !== NO_AV ? `<img alt="" src="${esc(a)}">` : esc(initials(name))}</span>`;
+}
+
+/* ----- Notifications ----- */
+const notif = {list: [], ch: null};
+async function notify(userId, kind, data = {}) {
+  if (!auth.user || !userId || (userId === myId() && kind !== "quiz")) return;
+  const {error} = await auth.sb.from("notifications").insert({user_id: userId, actor_id: myId(), kind, data: {name: myName(), ...data}});
+  if (error) console.warn("Notification non envoyée :", error.message);
+}
+function notifText(n, plain = false) {
+  const d = n.data || {};
+  const who = plain ? (d.name || "Quelqu'un") : `<b>${esc(d.name || "Quelqu'un")}</b>`;
+  const t = plain ? `« ${d.titleName || ""} »` : `<i>${esc(d.titleName || "")}</i>`;
+  if (n.kind === "friend") return `${who} vous a ajouté à ses amis`;
+  if (n.kind === "like") return `${who} a aimé votre critique de ${t}`;
+  if (n.kind === "quiz") return `Nouveau grade au quiz : ${plain ? d.level : `<b>${esc(d.level)}</b>`}`;
+  if (n.kind === "reco") return `${who} vous conseille ${t}`;
+  return "Nouvelle notification";
+}
+const NOTIF_IC = {friend: () => ICON.friends, like: () => ICON.heart, quiz: () => ICON.trophy, reco: () => ICON.film};
+async function loadNotifs() {
+  const {data, error} = await auth.sb.from("notifications").select("*").order("created_at", {ascending: false}).limit(40);
+  if (error) return;
+  notif.list = data || []; paintBell();
+}
+function startNotifs() {
+  if (!auth.user || notif.ch) return;
+  $("#ntWrap").hidden = false;
+  loadNotifs();
+  notif.ch = auth.sb.channel("rt-notif").on("postgres_changes", {event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${myId()}`}, p => {
+    if (notif.list.some(n => n.id === p.new.id)) return;
+    notif.list = [p.new, ...notif.list].slice(0, 40); paintBell();
+    if (p.new.actor_id !== myId()) toast(notifText(p.new, true));
+  }).subscribe();
+}
+function paintBell() {
+  const n = notif.list.filter(x => !x.read).length, c = $("#ntCount");
+  c.hidden = !n; c.textContent = n > 9 ? "9+" : n;
+  $("#ntBtn").setAttribute("aria-label", n ? `Notifications, ${n} non lue${n > 1 ? "s" : ""}` : "Notifications");
+  if (!$("#ntPanel").hidden) renderNotifPanel();
+}
+function renderNotifPanel() {
+  const friends = state.profile.friends;
+  $("#ntPanel").innerHTML = `<div class="nt-head"><b>Notifications</b>${notif.list.some(n => !n.read) ? `<button class="linkish" data-nt-all>Tout marquer comme lu</button>` : ""}</div>
+    ${notif.list.length ? notif.list.map(n => `<div class="nt-item ${n.read ? "" : "unread"}">
+      <button class="nt-main" data-nt="${n.id}"><span class="nt-ic">${(NOTIF_IC[n.kind] || NOTIF_IC.reco)()}</span><span class="nt-tx">${notifText(n)}<small>${ago(n.created_at)}</small></span></button>
+      ${n.kind === "friend" && n.actor_id && !friends.includes(n.actor_id) ? `<button class="btn small primary" data-nt-back="${esc(n.actor_id)}">Ajouter en retour</button>` : ""}
+    </div>`).join("") : `<p class="muted nt-empty">Rien de neuf pour l'instant. Vous serez prévenu ici quand quelqu'un vous ajoute ou aime une de vos critiques.</p>`}`;
+}
+async function markNotifsRead(ids) {
+  ids = ids.filter(id => notif.list.find(n => n.id === id && !n.read));
+  if (!ids.length) return;
+  notif.list.forEach(n => { if (ids.includes(n.id)) n.read = true; });
+  paintBell();
+  await auth.sb.from("notifications").update({read: true}).in("id", ids);
+}
+function toggleNotifs(force) {
+  const panel = $("#ntPanel"), open = force ?? panel.hidden;
+  if (open) { toggleMenu(false); renderNotifPanel(); }
+  panel.hidden = !open;
+  $("#ntBtn").setAttribute("aria-expanded", String(open));
+}
+$("#ntBtn").onclick = ev => { ev.stopPropagation(); toggleNotifs(); };
+$("#ntPanel").addEventListener("click", ev => {
+  ev.stopPropagation();
+  if (ev.target.closest("[data-nt-all]")) { markNotifsRead(notif.list.map(n => n.id)); return; }
+  const back = ev.target.closest("[data-nt-back]");
+  if (back) {
+    const id = back.dataset.ntBack;
+    state.profile.friends = [...new Set([...state.profile.friends, id])]; save("profile");
+    notify(id, "friend"); loadFriends(true); toast("Ajouté à vos amis"); renderNotifPanel(); if (ui.view === "amis") viewFriends();
+    return;
+  }
+  const b = ev.target.closest("[data-nt]"); if (!b) return;
+  const n = notif.list.find(x => String(x.id) === b.dataset.nt); if (!n) return;
+  markNotifsRead([n.id]); toggleNotifs(false);
+  if (n.data?.title) registerTitles([n.data.title]);
+  if (n.kind === "friend") location.hash = "amis";
+  else if (n.kind === "quiz") location.hash = "quiz";
+  else if (n.data?.titleId && byId(n.data.titleId)) openDetail(n.data.titleId);
+});
+document.addEventListener("click", ev => { if (!ev.target.closest(".nt-wrap")) toggleNotifs(false); });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#ntPanel").hidden) { toggleNotifs(false); $("#ntBtn").focus(); } });
+
+/* ----- Critiques publiques et likes ----- */
+const cr = {top: [], topAt: 0, err: false, byTitle: {}, loading: new Set()};
+const reviewRow = id => {
+  const e = E(id), f = byId(id);
+  return {user_id: myId(), title_id: id, title: slimTitle(f), author: {name: myName(), handle: state.profile.handle || ""},
+    rating: e.rating || null, text: e.review, spoiler: !!e.spoiler, updated_at: e.reviewedAt || new Date().toISOString()};
+};
+const isPublicReview = (id, e) => e?.review && !e.demo && !String(id).startsWith("c-") && byId(id);
+async function pubReview(id) {
+  if (!auth.user) return;
+  const e = E(id);
+  const {error} = isPublicReview(id, e)
+    ? await auth.sb.from("reviews").upsert({...reviewRow(id), updated_at: new Date().toISOString()})
+    : await auth.sb.from("reviews").delete().match({user_id: myId(), title_id: id});
+  if (error) console.warn("Critique non synchronisée :", error.message);
+  cr.topAt = 0;
+}
+// au premier chargement de la bibliothèque : publie les critiques écrites avant l'étape 3 et met à jour le nom de l'auteur
+let backfilled = false;
+async function backfillReviews() {
+  if (backfilled || !auth.user) return;
+  backfilled = true;
+  const rows = Object.entries(state.lib.entries).filter(([id, e]) => isPublicReview(id, e)).map(([id]) => reviewRow(id));
+  if (rows.length) { const {error} = await auth.sb.from("reviews").upsert(rows); if (error) console.warn(error.message); }
+}
+async function reviewFeed(title, limit) {
+  const {data, error} = await auth.sb.rpc("review_feed", {p_title: title, p_limit: limit});
+  if (error) throw error;
+  (data || []).forEach(r => r.title && registerTitles([r.title]));
+  return data || [];
+}
+async function loadTopReviews(force) {
+  if (!auth.sb || cr.loading.has("top") || (!force && cr.topAt && Date.now() - cr.topAt < 60000)) return;
+  cr.loading.add("top");
+  try { cr.top = await reviewFeed(null, 15); cr.err = false; } catch (e) { cr.err = true; console.warn(e); }
+  cr.topAt = Date.now(); cr.loading.delete("top");
+  await loadPeople(cr.top.map(r => r.user_id));
+  const side = $("#sideReviews"); if (side) side.innerHTML = topReviewsHTML();
+  if (ui.view === "critiques" && ui.rTab === "top") viewReviews();
+}
+function topReviewsHTML() {
+  if (auth.sb && (!cr.topAt || Date.now() - cr.topAt > 60000)) loadTopReviews();
+  if (!cr.topAt) return `<p class="muted">Chargement des critiques…</p>`;
+  if (cr.err) return `<p class="muted">Les critiques ne sont pas disponibles pour l'instant.</p>`;
+  return cr.top.length ? `<div class="crevs">${cr.top.map(r => creviewHTML(r, {withTitle: true})).join("")}</div>`
+    : `<p class="muted">Aucune critique publiée pour l'instant. Ouvrez un film et écrivez la première !</p>`;
+}
+function creviewHTML(r, {withTitle = false} = {}) {
+  const f = byId(r.title_id), mine = r.user_id === myId();
+  const name = r.author?.name || (r.author?.handle ? "@" + r.author.handle : "Cinéphile");
+  return `<article class="crev">
+    ${withTitle && f ? `<button class="crev-film" data-open="${esc(f.id)}" aria-label="Ouvrir ${esc(f.title)}">${poster(f, {mini: true})}<span style="min-width:0"><b>${esc(f.title)}</b><small>${[f.year, kindLabel(f.t)].filter(Boolean).join(" · ")}</small></span></button>` : ""}
+    <div class="crev-head">${avHTML(r.user_id, name)}<span class="crev-who"><b>${esc(name)}${mine ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${r.rating ? `<span class="stars-s">${starsText(+r.rating)}</span> · ` : ""}${ago(r.updated_at)}</small></span></div>
+    <div class="${r.spoiler ? "spoil" : ""}"><p class="rtext crev-text">${esc(r.text)}</p>${r.spoiler ? `<button class="btn small spoil-btn" data-act="unspoil">Spoilers · Afficher</button>` : ""}</div>
+    <button class="rlike" data-rlike="${esc(r.user_id + "|" + r.title_id)}" aria-pressed="${!!r.liked}" ${mine ? `disabled title="Vous ne pouvez pas aimer votre propre critique"` : `title="${r.liked ? "Je n'aime plus" : "J'aime cette critique"}"`} aria-label="J'aime : ${+r.likes}">${ICON.heart}<span class="num">${+r.likes}</span></button>
+  </article>`;
+}
+function commInner(id) {
+  const c = cr.byTitle[id];
+  if (!c) return `<p class="muted">Chargement des critiques…</p>`;
+  if (c.err) return `<p class="muted">Les critiques n'ont pas pu être chargées.</p>`;
+  return c.list.length ? `<div class="crevs">${c.list.map(r => creviewHTML(r)).join("")}</div>`
+    : `<p class="muted" style="color:#a3a3ad">Personne n'a encore publié de critique sur ce titre. Soyez le premier ou la première, juste au-dessus !</p>`;
+}
+async function loadComm(id, force) {
+  const c = cr.byTitle[id];
+  if (!auth.sb || cr.loading.has(id) || (!force && c && Date.now() - c.at < 30000)) return;
+  cr.loading.add(id);
+  let list = [], err = false;
+  try { list = await reviewFeed(id, 50); } catch (e) { err = true; console.warn(e); }
+  cr.loading.delete(id);
+  cr.byTitle[id] = {list, err, at: Date.now()};
+  await loadPeople(list.map(r => r.user_id));
+  if (curId === id) { const el = $("#commReviews"); if (el) el.innerHTML = commInner(id); }
+}
+function paintLikes(key) {
+  const r = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list)].find(x => x.user_id + "|" + x.title_id === key);
+  if (!r) return;
+  $$("[data-rlike]").filter(b => b.dataset.rlike === key).forEach(b => {
+    b.setAttribute("aria-pressed", String(!!r.liked)); b.setAttribute("aria-label", `J'aime : ${+r.likes}`);
+    b.title = r.liked ? "Je n'aime plus" : "J'aime cette critique"; $(".num", b).textContent = +r.likes;
+  });
+}
+async function toggleLike(key) {
+  if (!auth.user) { if (auth.sb) openAuth("login"); toast("Connectez-vous pour aimer une critique."); return; }
+  const [author, titleId] = key.split("|");
+  if (author === myId()) return;
+  const rows = [...cr.top, ...Object.values(cr.byTitle).flatMap(x => x.list)].filter(r => r.user_id === author && r.title_id === titleId);
+  if (!rows.length) return;
+  const on = !rows[0].liked;
+  const apply = v => { rows.forEach(r => { r.liked = v; r.likes = Math.max(0, +r.likes + (v ? 1 : -1)); }); paintLikes(key); };
+  apply(on);
+  const match = {user_id: myId(), author_id: author, title_id: titleId};
+  const {error} = on ? await auth.sb.from("review_likes").insert(match) : await auth.sb.from("review_likes").delete().match(match);
+  if (error && !/duplicate/i.test(error.message)) { apply(!on); toast("Votre j'aime n'a pas pu être enregistré."); return; }
+  if (on) { const f = byId(titleId); notify(author, "like", {titleId, titleName: f?.title || "", title: f ? slimTitle(f) : null}); }
+}
+
+/* ----- Quiz ----- */
+const QUIZ_N = 10, QUIZ_SEC = 20, QUIZ_PASS = 7;
+const LEVELS = [{min: 0, name: "Figurant"}, {min: 150, name: "Second rôle"}, {min: 500, name: "Premier rôle"}, {min: 1200, name: "Réalisateur·rice"}, {min: 2500, name: "Palme d'or"}];
+const levelIdx = pts => LEVELS.reduce((k, l, i) => pts >= l.min ? i : k, 0);
+const quizBadge = pts => { const i = levelIdx(pts || 0); return `<span class="qz-badge l${i}">${esc(LEVELS[i].name)}</span>`; };
+const MEDALS = ["🥇", "🥈", "🥉"];
+const quiz = {phase: "intro", qs: [], i: 0, correct: 0, points: 0, picked: null, answers: [], deadline: 0, timer: null, err: "", saved: null,
+  board: {month: [], all: [], at: 0, err: false}, boardLoading: false, tab: "month", mine: null};
+const myQuiz = () => auth.user ? (quiz.mine || {points: 0, quizzes: 0, passed: 0, best: 0}) : (state.lib.quiz || {points: 0, quizzes: 0, passed: 0, best: 0});
+function myQuizBadge() {
+  const q = myQuiz(); if (!q.quizzes) return "";
+  const rank = auth.user ? quiz.board.month.findIndex(r => r.user_id === myId()) : -1;
+  return `${quizBadge(q.points)}${rank >= 0 && rank < 3 ? `<span class="qz-badge l4" title="Podium du quiz ce mois-ci">${MEDALS[rank]} Champion du mois</span>` : ""}`;
+}
+async function loadBoard(force) {
+  if (!auth.sb || quiz.boardLoading || (!force && quiz.board.at && Date.now() - quiz.board.at < 60000)) return;
+  quiz.boardLoading = true;
+  const cols = "user_id,name,points,quizzes,passed,month,month_points,month_passed";
+  const [a, b, c] = await Promise.all([
+    auth.sb.from("quiz_scores").select(cols).eq("month", monthKey()).gt("month_points", 0).order("month_points", {ascending: false}).order("month_passed", {ascending: false}).limit(20),
+    auth.sb.from("quiz_scores").select(cols).order("points", {ascending: false}).order("passed", {ascending: false}).limit(20),
+    auth.user ? auth.sb.from("quiz_scores").select("*").eq("user_id", myId()).maybeSingle() : Promise.resolve({data: null}),
+  ]);
+  quiz.boardLoading = false;
+  quiz.board = {month: a.data || [], all: b.data || [], at: Date.now(), err: !!(a.error || b.error)};
+  if (auth.user && !c.error) quiz.mine = c.data;
+  await loadPeople([...quiz.board.month, ...quiz.board.all].map(r => r.user_id));
+  if (ui.view === "quiz" && quiz.phase !== "play") viewQuiz();
+  const pod = $("#homePodium"); if (pod) pod.innerHTML = podiumHTML();
+  if (ui.view === "profil") viewProfile();
+}
+function podiumHTML() {
+  if (!quiz.board.at) { loadBoard(); return `<p class="muted">Chargement du classement…</p>`; }
+  const top = quiz.board.month.slice(0, 3);
+  if (!top.length) return `<div class="row-empty">Personne n'a encore joué ce mois-ci. <a class="btn small primary" href="#quiz">Lancer le premier quiz</a></div>`;
+  return `<div class="podium">${top.map((r, i) => `<div class="pod p${i + 1}"><span class="md" aria-label="${i + 1}${i ? "e" : "er"}">${MEDALS[i]}</span>${avHTML(r.user_id, r.name)}<b>${esc(r.name || "Cinéphile")}</b>${quizBadge(r.points)}<small><b class="num">${r.month_points}</b> pts · ${r.month_passed} quiz réussi${r.month_passed > 1 ? "s" : ""}</small></div>`).join("")}</div>`;
+}
+function boardHTML() {
+  const monthly = quiz.tab === "month", rows = monthly ? quiz.board.month : quiz.board.all;
+  if (!quiz.board.at) return `<p class="muted">Chargement du classement…</p>`;
+  if (quiz.board.err) return `<p class="muted">Classement indisponible. Le créateur doit lancer supabase-etape3.sql dans Supabase.</p>`;
+  if (!rows.length) return `<p class="muted">${monthly ? "Personne n'a encore marqué de points ce mois-ci." : "Personne n'a encore joué."} À vous de jouer !</p>`;
+  return `<div class="board">${rows.map((r, i) => `<div class="brow ${r.user_id === myId() ? "me" : ""}">
+    <span class="rk">${i < 3 ? MEDALS[i] : i + 1}</span>${avHTML(r.user_id, r.name)}
+    <span class="bn"><b>${esc(r.name || "Cinéphile")}${r.user_id === myId() ? ` <span class="tag-ex">vous</span>` : ""}</b><small>${quizBadge(r.points)} · ${monthly ? r.month_passed : r.passed} réussi${(monthly ? r.month_passed : r.passed) > 1 ? "s" : ""} sur ${r.quizzes} joué${r.quizzes > 1 ? "s" : ""}</small></span>
+    <span class="bp num">${monthly ? r.month_points : r.points}<small>points</small></span></div>`).join("")}</div>`;
+}
+const maskTitle = (txt, title) => {
+  let out = txt.length > 420 ? txt.slice(0, 417).replace(/\s+\S*$/, "") + "…" : txt;
+  title.split(/[\s:,'’\-–!?.()]+/).filter(w => w.length > 3).forEach(w => { out = out.replace(new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"), "•••"); });
+  return out;
+};
+async function buildQuiz() {
+  const rnd = n => 1 + Math.floor(Math.random() * n);
+  const lists = await Promise.all([
+    tmdb("/movie/top_rated", {page: rnd(25)}), tmdb("/movie/top_rated", {page: rnd(25)}),
+    tmdb("/movie/popular", {page: rnd(15)}), tmdb("/discover/movie", {sort_by: "vote_count.desc", page: rnd(25)})]);
+  const seen = new Set();
+  const pool = shuffle(lists.flatMap(l => l.results || []).filter(m => m.poster_path && m.backdrop_path && m.overview && m.release_date && !seen.has(m.id) && seen.add(m.id)));
+  if (pool.length < QUIZ_N + 6) throw new Error("Pas assez de films pour composer un quiz. Réessayez.");
+  const subjects = pool.slice(0, QUIZ_N), extras = pool.slice(QUIZ_N, QUIZ_N + 8);
+  const details = await Promise.all([...subjects, ...extras].map(m => tmdb(`/movie/${m.id}`, {append_to_response: "credits"}).catch(() => null)));
+  const dirOf = d => (d?.credits?.crew || []).find(p => p.job === "Director")?.name;
+  const castOf = d => (d?.credits?.cast || []).slice(0, 5).map(p => p.name);
+  const allDirs = [...new Set(details.map(dirOf).filter(Boolean))];
+  const allCast = [...new Set(details.flatMap(d => castOf(d).slice(0, 3)))];
+  const thisYear = new Date().getFullYear();
+  const types = shuffle(["year", "dir", "still", "synopsis", "actor", "year", "dir", "still", "synopsis", "actor"]);
+  return subjects.map((m, i) => {
+    const d = details[i], dir = dirOf(d), cast = castOf(d), year = +m.release_date.slice(0, 4);
+    let type = types[i];
+    if (type === "dir" && (!dir || allDirs.filter(x => x !== dir).length < 3)) type = "year";
+    if (type === "actor" && (!cast.length || allCast.filter(x => !cast.includes(x)).length < 3)) type = "still";
+    const otherTitles = () => [...new Set(shuffle(pool).filter(x => x.id !== m.id && x.title !== m.title).map(x => x.title))].slice(0, 3);
+    let q;
+    if (type === "year") {
+      const ys = new Set([year]);
+      while (ys.size < 4) { const y = year + (Math.random() < .5 ? -1 : 1) * (1 + Math.floor(Math.random() * 6)); if (y <= thisYear && y > 1900) ys.add(y); }
+      q = {text: `En quelle année est sorti « ${m.title} » ?`, answer: String(year), options: [...ys].map(String), img: m.backdrop_path};
+    } else if (type === "dir") {
+      q = {text: `Qui a réalisé « ${m.title} » ?`, answer: dir, options: [dir, ...shuffle(allDirs.filter(x => x !== dir)).slice(0, 3)], img: m.backdrop_path};
+    } else if (type === "actor") {
+      const a = cast[Math.floor(Math.random() * Math.min(3, cast.length))];
+      q = {text: `Qui joue dans « ${m.title} » ?`, answer: a, options: [a, ...shuffle(allCast.filter(x => !cast.includes(x))).slice(0, 3)]};
+    } else if (type === "still") {
+      q = {text: "De quel film est tirée cette image ?", answer: m.title, options: [m.title, ...otherTitles()], img: m.backdrop_path};
+    } else {
+      q = {text: "De quel film est ce résumé ?", answer: m.title, options: [m.title, ...otherTitles()], synopsis: maskTitle(m.overview, m.title)};
+    }
+    q.options = shuffle(q.options);
+    q.film = fromTmdb(m, "movie")?.id;
+    return q;
+  });
+}
+const paintQuiz = () => { if (ui.view === "quiz") viewQuiz(); };
+async function startQuiz() {
+  clearInterval(quiz.timer);
+  Object.assign(quiz, {phase: "loading", err: ""}); paintQuiz();
+  try { quiz.qs = await buildQuiz(); }
+  catch (e) { quiz.phase = "intro"; quiz.err = e?.status || e?.name === "AbortError" ? tmdbProblem(e) : String(e?.message || e); paintQuiz(); return; }
+  Object.assign(quiz, {phase: "play", i: 0, correct: 0, points: 0, answers: [], saved: null});
+  askQuestion();
+}
+function askQuestion() {
+  quiz.picked = null; quiz.deadline = Date.now() + QUIZ_SEC * 1000;
+  runQuizTimer(); paintQuiz();
+}
+function runQuizTimer() { clearInterval(quiz.timer); quiz.timer = setInterval(tickQuiz, 250); }
+function abandonQuiz() { clearInterval(quiz.timer); quiz.phase = "intro"; toast("Quiz abandonné : vous avez quitté l'onglet Quiz."); }
+function tickQuiz() {
+  if (quiz.phase !== "play" || quiz.picked != null) { clearInterval(quiz.timer); return; }
+  if (ui.view !== "quiz") { abandonQuiz(); return; }
+  const left = quiz.deadline - Date.now();
+  const bar = $("#qzTime"), sec = $("#qzSec");
+  if (bar) { $("i", bar).style.width = Math.max(0, left / (QUIZ_SEC * 10)) + "%"; bar.classList.toggle("low", left < 5000); }
+  if (sec) sec.textContent = Math.max(0, Math.ceil(left / 1000));
+  if (left <= 0) answerQuiz(-1);
+}
+function answerQuiz(idx) {
+  if (quiz.phase !== "play" || quiz.picked != null) return;
+  clearInterval(quiz.timer);
+  const q = quiz.qs[quiz.i], ok = idx >= 0 && q.options[idx] === q.answer;
+  const left = Math.max(0, quiz.deadline - Date.now());
+  const pts = ok ? 10 + Math.min(5, Math.ceil(left / 4000)) : 0; // 10 points + bonus de rapidité (5 au plus)
+  quiz.picked = idx; quiz.answers.push({ok, pts});
+  if (ok) { quiz.correct++; quiz.points += pts; }
+  paintQuiz();
+  const at = quiz.i;
+  setTimeout(() => {
+    if (quiz.phase !== "play" || quiz.i !== at) return;
+    if (ui.view !== "quiz") { abandonQuiz(); return; }
+    quiz.i++;
+    quiz.i < quiz.qs.length ? askQuestion() : finishQuiz();
+  }, ok ? 1100 : 2000);
+}
+async function finishQuiz() {
+  quiz.phase = "done";
+  const before = myQuiz().points || 0, passed = quiz.correct >= QUIZ_PASS;
+  if (auth.user) {
+    quiz.saved = {pending: true}; paintQuiz();
+    const {data, error} = await auth.sb.rpc("record_quiz", {p_correct: quiz.correct, p_total: QUIZ_N, p_points: quiz.points, p_name: myName()});
+    if (error) quiz.saved = {error: /Trop rapide/.test(error.message) ? "Score non compté : attendez quelques secondes entre deux quiz." : "Le score n'a pas pu être enregistré."};
+    else { quiz.mine = Array.isArray(data) ? data[0] : data; quiz.saved = {ok: true}; }
+  } else {
+    const s = state.lib.quiz = {points: 0, quizzes: 0, passed: 0, best: 0, ...(state.lib.quiz || {})};
+    s.points += quiz.points; s.quizzes++; s.passed += passed ? 1 : 0; s.best = Math.max(s.best, quiz.correct);
+    save("lib"); quiz.saved = {local: true};
+  }
+  const after = myQuiz().points || 0;
+  if (levelIdx(after) > levelIdx(before)) {
+    const level = LEVELS[levelIdx(after)].name;
+    toast(`Nouveau grade : ${level} !`);
+    notify(myId(), "quiz", {level});
+  }
+  paintQuiz(); loadBoard(true);
+}
+function viewQuiz() {
+  const main = $("#main");
+  if (quiz.phase === "loading") { main.innerHTML = `<div class="narrow qz" style="padding-top:60px"><p class="muted" style="font-size:16px">Préparation des questions…</p></div>`; return; }
+  if (quiz.phase === "play") {
+    const q = quiz.qs[quiz.i], picked = quiz.picked != null;
+    if (!picked && quiz.deadline > Date.now()) runQuizTimer(); else if (!picked) setTimeout(() => answerQuiz(-1), 0);
+    const left = Math.max(0, quiz.deadline - Date.now());
+    main.innerHTML = `<div class="narrow qz"><div class="qz-play">
+      <div class="qz-top"><span>Question <b class="num">${quiz.i + 1}</b> / ${QUIZ_N}</span><span><b class="num">${quiz.points}</b> pts</span><span>${picked ? (quiz.answers.at(-1).ok ? `<b style="color:var(--seen)">+${quiz.answers.at(-1).pts}</b>` : `<b style="color:var(--danger)">${quiz.picked < 0 ? "Temps écoulé" : "Raté"}</b>`) : `<b class="num" id="qzSec">${Math.ceil(left / 1000)}</b> s`}</span></div>
+      <div class="qz-timer ${left < 5000 ? "low" : ""}" id="qzTime"><i style="width:${picked ? 0 : left / (QUIZ_SEC * 10)}%"></i></div>
+      ${q.img ? `<div class="qz-media"><img src="${IMG(q.img, "w780")}" alt=""></div>` : ""}
+      ${q.synopsis ? `<p class="qz-syn">${esc(q.synopsis)}</p>` : ""}
+      <h2 class="qz-q">${esc(q.text)}</h2>
+      <div class="qz-opts">${q.options.map((o, i) => `<button class="qz-opt ${picked && o === q.answer ? "ok" : picked && i === quiz.picked ? "bad" : ""}" data-qz-opt="${i}" ${picked ? "disabled" : ""}><kbd>${i + 1}</kbd><span>${esc(o)}</span></button>`).join("")}</div>
+      <p class="note" style="margin:0">Touches 1 à 4 pour répondre. 10 points par bonne réponse, jusqu'à 5 de bonus si vous êtes rapide.</p>
+    </div></div>`;
+    $$("[data-qz-opt]").forEach(b => b.onclick = () => answerQuiz(+b.dataset.qzOpt));
+    return;
+  }
+  loadBoard();
+  const me = myQuiz(), li = levelIdx(me.points || 0), next = LEVELS[li + 1];
+  const tile = (l, v, s = "") => `<div class="sp-tile"><span>${l}</span><b class="num">${v}</b>${s ? `<small>${s}</small>` : ""}</div>`;
+  let top;
+  if (quiz.phase === "done") {
+    const passed = quiz.correct >= QUIZ_PASS;
+    top = `<section class="qz-play qz-res">
+      <div class="eyebrow">${passed ? "Quiz réussi !" : `Raté de peu : il faut ${QUIZ_PASS} bonnes réponses`}</div>
+      <div class="qz-big num">${quiz.correct}<span class="muted" style="font-size:.45em">/${QUIZ_N}</span></div>
+      <b style="font-size:18px">+${quiz.points} points</b>
+      <p class="note" style="margin:0">${quiz.saved?.pending ? "Enregistrement du score…" : quiz.saved?.error ? esc(quiz.saved.error) : quiz.saved?.local ? `Points gardés sur cet appareil. ${auth.sb ? "Connectez-vous pour entrer au classement." : ""}` : "Score ajouté au classement."}</p>
+      <div class="qz-recap">${quiz.qs.map((q, i) => { const a = quiz.answers[i] || {}; const f = byId(q.film); return `<div class="qz-rc"><span class="${a.ok ? "y" : "n"}">${a.ok ? "✓" : "✕"}</span><span style="min-width:0">${esc(q.text)}<br><small>Réponse : ${esc(q.answer)}</small></span>${f ? `<button class="btn small ghost" data-open="${esc(f.id)}">Fiche</button>` : ""}</div>`; }).join("")}</div>
+      <div class="row-btns"><button class="btn primary" data-qz-start>Rejouer</button><button class="btn" data-qz-intro>Classement</button>${!auth.user && auth.sb ? `<button class="btn" data-act="login">Se connecter</button>` : ""}</div>
+    </section>`;
+  } else {
+    top = `<section class="qz-hero">
+      <span class="fdm-pill">${ICON.bolt} ${QUIZ_N} questions · ${QUIZ_SEC} s chacune</span>
+      <h2>Êtes-vous incollable sur le cinéma ?</h2>
+      <p>Années de sortie, réalisateurs, acteurs, images et résumés de films : les questions changent à chaque partie. Un quiz est réussi à partir de ${QUIZ_PASS} bonnes réponses sur ${QUIZ_N}.</p>
+      ${quiz.err ? `<p style="color:var(--danger)">${esc(quiz.err)}</p>` : ""}
+      <div class="row-btns"><button class="btn primary" data-qz-start>${me.quizzes ? "Nouvelle partie" : "Commencer le quiz"}</button>${!auth.user && auth.sb ? `<button class="btn" data-act="login">Se connecter pour le classement</button>` : ""}</div>
+    </section>`;
+  }
+  main.innerHTML = `<div class="narrow qz">
+    <div class="view-head"><div><div class="eyebrow">Testez vos connaissances</div><h1>Quiz</h1></div></div>
+    ${top}
+    <div class="sp-tiles" style="margin-top:18px">${tile("Mes points", me.points || 0, auth.user ? "au classement" : "sur cet appareil")}${tile("Grade", `<span style="font-size:22px">${esc(LEVELS[li].name)}</span>`, next ? `encore ${next.min - (me.points || 0)} pts pour ${esc(next.name)}` : "grade maximal")}${tile("Quiz réussis", me.passed || 0, `sur ${me.quizzes || 0} joué${(me.quizzes || 0) > 1 ? "s" : ""}`)}${tile("Meilleur score", `${me.best || 0}/${QUIZ_N}`)}</div>
+    <div class="qz-cols" style="margin-top:8px">
+      <div>
+        <h2 class="sec-title">${ICON.trophy} Classement</h2>
+        ${auth.sb ? `<div class="toolbar" style="margin-bottom:12px"><div class="seg" role="group" aria-label="Période">${[["month", "Ce mois-ci"], ["all", "Depuis toujours"]].map(([k, l]) => `<button data-qz-tab="${k}" aria-pressed="${quiz.tab === k}">${l}</button>`).join("")}</div></div>${boardHTML()}`
+          : `<p class="muted">Le classement apparaît quand les comptes sont activés sur le site.</p>`}
+      </div>
+      <div>
+        <h2 class="sec-title">${ICON.star} Récompenses</h2>
+        <div class="qz-ladder">${LEVELS.map((l, i) => `<div class="qz-step ${i === li ? "on" : i < li ? "done" : ""}"><span>${i < li ? "✓ " : ""}<b>${esc(l.name)}</b></span><span class="num">${l.min} pts</span></div>`).join("")}</div>
+        <p class="note">Votre grade s'affiche sur votre profil et dans le classement. Les 3 meilleurs du mois montent sur le podium de la page d'accueil et gagnent le badge « Champion du mois » sur leur profil.</p>
+      </div>
+    </div>
+  </div>`;
+  $$("[data-qz-start]").forEach(b => b.onclick = startQuiz);
+  $$("[data-qz-intro]").forEach(b => b.onclick = () => { quiz.phase = "intro"; viewQuiz(); scrollTo(0, 0); });
+  $$("[data-qz-tab]").forEach(b => b.onclick = () => { quiz.tab = b.dataset.qzTab; viewQuiz(); });
+}
+document.addEventListener("keydown", ev => {
+  if (ui.view !== "quiz" || quiz.phase !== "play" || quiz.picked != null || $("dialog[open]") || ev.target.closest?.("input,textarea,select")) return;
+  const i = ["1", "2", "3", "4"].indexOf(ev.key);
+  if (i >= 0 && i < quiz.qs[quiz.i].options.length) { ev.preventDefault(); answerQuiz(i); }
+});
+
+/* ----- Messagerie ----- */
+const chat = {open: false, peer: null, msgs: [], attach: null, picking: false, hits: [], pickToken: 0, draft: "", ch: null};
+const peerOf = m => m.sender === myId() ? m.recipient : m.sender;
+const unreadFrom = peer => chat.msgs.filter(m => m.recipient === myId() && !m.read_at && (!peer || m.sender === peer)).length;
+async function loadMessages() {
+  const {data, error} = await auth.sb.from("messages").select("*").order("created_at", {ascending: false}).limit(500);
+  if (error) return;
+  chat.msgs = (data || []).reverse();
+  await loadPeople([...chat.msgs.map(peerOf), ...state.profile.friends]);
+  paintChatFab(); if (chat.open) renderChat();
+}
+function startChat() {
+  if (!auth.user || chat.ch) return;
+  $("#chat").hidden = false;
+  loadMessages();
+  chat.ch = auth.sb.channel("rt-chat").on("postgres_changes", {event: "INSERT", schema: "public", table: "messages", filter: `recipient=eq.${myId()}`}, async p => {
+    const m = p.new;
+    if (chat.msgs.some(x => x.id === m.id)) return;
+    chat.msgs.push(m);
+    await loadPeople([m.sender]);
+    if (chat.open && chat.peer === m.sender) { paintChatMsgs(); markChatRead(m.sender); }
+    else { toast(`Nouveau message de ${nameOf(m.sender)}`); if (chat.open && !chat.peer) renderChat(); }
+    paintChatFab();
+  }).subscribe();
+}
+function paintChatFab() {
+  const n = unreadFrom(), c = $("#chatCount");
+  c.hidden = !n; c.textContent = n > 9 ? "9+" : n;
+  $("#chatFab").setAttribute("aria-label", n ? `Messages, ${n} non lu${n > 1 ? "s" : ""}` : "Messages");
+}
+async function markChatRead(peer) {
+  const list = chat.msgs.filter(m => m.sender === peer && m.recipient === myId() && !m.read_at);
+  if (!list.length) return;
+  const now = new Date().toISOString();
+  list.forEach(m => m.read_at = now); paintChatFab();
+  await auth.sb.from("messages").update({read_at: now}).eq("recipient", myId()).eq("sender", peer).is("read_at", null);
+}
+function openChat(peer = null, attach) {
+  if (!auth.user) { if (auth.sb) openAuth("login"); toast("Connectez-vous pour discuter avec vos amis."); return; }
+  chat.open = true; chat.peer = peer; chat.picking = false;
+  if (attach !== undefined) chat.attach = attach;
+  if (peer) { chat.draft = ""; markChatRead(peer); loadPeople([peer]).then(() => chat.open && chat.peer === peer && renderChat()); }
+  $("#chatPanel").hidden = false; $("#chatFab").setAttribute("aria-expanded", "true");
+  renderChat();
+}
+function closeChat() {
+  chat.open = false; chat.picking = false;
+  $("#chatPanel").hidden = true; $("#chatFab").setAttribute("aria-expanded", "false");
+}
+const filmLine = f => `${poster(f, {mini: true})}<span style="min-width:0"><b>${esc(f.title)}</b><small>${[f.year, kindLabel(f.t)].filter(Boolean).join(" · ")}</small></span>`;
+function msgHTML(m) {
+  const mine = m.sender === myId();
+  if (m.title) registerTitles([m.title]);
+  const f = m.title && byId(m.title.id);
+  return `<div class="cm ${mine ? "mine" : ""}">${f ? `<button class="cm-film" data-open="${esc(f.id)}">${poster(f, {mini: true})}<span style="min-width:0"><small>${mine ? "Vous conseillez" : "Vous conseille"}</small><b>${esc(f.title)}</b><small>${[f.year, kindLabel(f.t)].filter(Boolean).join(" · ")}</small></span></button>` : ""}${m.body ? `<p>${esc(m.body)}</p>` : ""}<time>${ago(m.created_at)}</time></div>`;
+}
+function paintChatMsgs() {
+  const box = $("#chatMsgs"); if (!box) return;
+  const list = chat.msgs.filter(m => peerOf(m) === chat.peer);
+  box.innerHTML = list.length ? list.map(msgHTML).join("") : `<div class="ch-empty">Écrivez votre premier message${chat.attach ? "" : " ou conseillez un film avec le bouton 🎬"}.</div>`;
+  box.scrollTop = box.scrollHeight;
+}
+function renderChat() {
+  const panel = $("#chatPanel"), x = `<button class="ch-x" data-chat="close" aria-label="Fermer la messagerie">×</button>`;
+  if (!chat.peer) {
+    const last = {};
+    chat.msgs.forEach(m => { last[peerOf(m)] = m; });
+    const convs = Object.keys(last).sort((a, b) => last[b].created_at.localeCompare(last[a].created_at));
+    const others = state.profile.friends.filter(id => !last[id]);
+    const row = id => { const m = last[id], n = unreadFrom(id), name = nameOf(id);
+      return `<button class="ch-peer" data-peer="${esc(id)}">${avHTML(id, name)}<span class="pm"><b>${esc(name)}</b><small>${m ? `${m.sender === myId() ? "Vous : " : ""}${m.title && !m.body ? "🎬 " + esc(m.title.title || "") : esc(m.body)} · ${ago(m.created_at)}` : "Ami·e · démarrer une conversation"}</small></span>${n ? `<span class="ud" aria-label="${n} non lu${n > 1 ? "s" : ""}"></span>` : ""}</button>`; };
+    panel.innerHTML = `<div class="ch-head"><b>Messages</b>${x}</div>
+      <div class="ch-body">
+        ${chat.attach ? `<div class="ch-note">À qui voulez-vous conseiller <b>${esc(chat.attach.title)}</b> ? <button class="linkish" data-chat="rm-attach" style="font-size:12.5px;color:var(--muted)">Annuler</button></div>` : ""}
+        ${convs.length ? `<div class="ch-k">Conversations</div>${convs.map(row).join("")}` : ""}
+        ${others.length ? `<div class="ch-k">Amis</div>${others.map(row).join("")}` : ""}
+        ${!convs.length && !others.length ? `<div class="ch-empty">Ajoutez des amis pour discuter avec eux et vous conseiller des films.<a class="btn small primary" href="#amis" data-chat="close">Trouver des amis</a></div>` : ""}
+      </div><div></div>`;
+    return;
+  }
+  const name = nameOf(chat.peer);
+  panel.innerHTML = `<div class="ch-head"><button class="ch-x" data-chat="back" aria-label="Toutes les conversations">${ICON.back}</button>${avHTML(chat.peer, name)}<b>${esc(name)}</b>${x}</div>
+    <div class="ch-body" id="chatMsgs" aria-live="polite"></div>
+    <div class="ch-foot">
+      ${chat.picking ? `<div class="ch-pick"><input class="input" id="chatPickQ" type="search" placeholder="Chercher un film ou une série à conseiller…" autocomplete="off"><div class="ch-hits" id="chatHits"></div></div>` : ""}
+      ${chat.attach ? `<div class="ch-chip">${poster(chat.attach, {mini: true})}<span>🎬 ${esc(chat.attach.title)}</span><button class="ch-x" data-chat="rm-attach" aria-label="Retirer le film">×</button></div>` : ""}
+      <div class="ch-input">
+        <button class="ch-x" data-chat="pick" aria-pressed="${chat.picking}" aria-label="Conseiller un film" title="Conseiller un film">🎬</button>
+        <textarea class="input" id="chatTa" rows="1" maxlength="2000" placeholder="Votre message…" aria-label="Message"></textarea>
+        <button class="ch-x send" data-chat="send" aria-label="Envoyer">${ICON.send}</button>
+      </div>
+    </div>`;
+  paintChatMsgs();
+  const ta = $("#chatTa");
+  ta.value = chat.draft;
+  ta.oninput = () => { chat.draft = ta.value; ta.style.height = "auto"; ta.style.height = Math.min(120, ta.scrollHeight) + "px"; };
+  ta.onkeydown = ev => { if (ev.key === "Enter" && !ev.shiftKey) { ev.preventDefault(); sendChat(); } };
+  if (chat.picking) { const q = $("#chatPickQ"); q.oninput = () => chatSearch(q.value); q.focus(); paintChatHits(); }
+  else ta.focus({preventScroll: true});
+}
+async function chatSearch(query) {
+  const my = ++chat.pickToken, q = query.trim();
+  if (!q) { chat.hits = []; paintChatHits(); return; }
+  await new Promise(r => setTimeout(r, 250));
+  if (my !== chat.pickToken) return;
+  try {
+    const res = await tmdb("/search/multi", {query: q, include_adult: "false"});
+    if (my !== chat.pickToken) return;
+    chat.hits = res.results.map(r => fromTmdb(r)).filter(f => f && f.title).slice(0, 6);
+  } catch { chat.hits = []; }
+  paintChatHits();
+}
+function paintChatHits() {
+  const el = $("#chatHits"); if (!el) return;
+  el.innerHTML = chat.hits.map((f, i) => `<button class="ch-hit" data-chat-hit="${i}">${filmLine(f)}</button>`).join("");
+}
+async function sendChat() {
+  const ta = $("#chatTa"), body = (ta?.value || "").trim(), t = chat.attach, peer = chat.peer;
+  if (!peer || (!body && !t)) return;
+  ta.value = ""; chat.draft = ""; chat.attach = null;
+  const {data, error} = await auth.sb.from("messages").insert({sender: myId(), recipient: peer, body, title: t ? slimTitle(t) : null}).select().single();
+  if (error) { toast("Le message n'a pas pu être envoyé."); chat.draft = body; chat.attach = t; if (chat.peer === peer) renderChat(); return; }
+  chat.msgs.push(data);
+  if (chat.open && chat.peer === peer) { if (t) renderChat(); else paintChatMsgs(); }
+}
+$("#chatFab").onclick = () => chat.open ? closeChat() : openChat(chat.peer);
+$("#chatPanel").addEventListener("click", ev => {
+  const hit = ev.target.closest("[data-chat-hit]");
+  if (hit) { chat.attach = chat.hits[+hit.dataset.chatHit]; chat.picking = false; renderChat(); return; }
+  const p = ev.target.closest("[data-peer]"); if (p) { openChat(p.dataset.peer); return; }
+  const b = ev.target.closest("[data-chat]"); if (!b) return;
+  const act = b.dataset.chat;
+  if (act === "close") closeChat();
+  else if (act === "back") { chat.peer = null; chat.picking = false; renderChat(); }
+  else if (act === "send") sendChat();
+  else if (act === "pick") { chat.picking = !chat.picking; chat.hits = []; renderChat(); }
+  else if (act === "rm-attach") { chat.attach = null; renderChat(); }
+});
+$("#chatPanel").addEventListener("keydown", ev => { if (ev.key === "Escape") { closeChat(); $("#chatFab").focus(); } });
+
+/* ----- Admin (créateur uniquement) ----- */
+const adm = {q: "", hits: null, token: 0, timer: null, stats: null, revs: null, armed: "", at: 0};
+async function loadAdmin() {
+  adm.at = Date.now();
+  const count = t => auth.sb.from(t).select("*", {count: "exact", head: true}).then(r => r.error ? "–" : r.count ?? 0);
+  const [members, reviews, players, revs] = await Promise.all([count("public_profiles"), count("reviews"), count("quiz_scores"),
+    auth.sb.from("reviews").select("user_id,title_id,title,author,text,updated_at").order("updated_at", {ascending: false}).limit(25)]);
+  adm.stats = {members, reviews, players};
+  adm.revs = revs.data || [];
+  adm.revs.forEach(r => r.title && registerTitles([r.title]));
+  if (ui.view === "admin") viewAdmin();
+}
+async function admSearch(q) {
+  const my = ++adm.token;
+  try {
+    const res = q.trim() ? await tmdb("/search/multi", {query: q.trim(), include_adult: "false"}) : await tmdb("/trending/all/week");
+    if (my !== adm.token) return;
+    adm.hits = res.results.map(r => fromTmdb(r)).filter(f => f && f.title).slice(0, 18);
+  } catch { if (my === adm.token) adm.hits = []; }
+  const el = $("#admHits"); if (el && ui.view === "admin") el.innerHTML = admHitsHTML();
+}
+function admHitsHTML() {
+  if (!adm.hits) return `<p class="muted">Chargement…</p>`;
+  if (!adm.hits.length) return `<p class="muted">Aucun résultat sur TMDB.</p>`;
+  return `<div class="adm-hits">${adm.hits.map(f => { const r = reco.ids.includes(f.id), u = reco.featured.includes(f.id);
+    return `<div class="adm-hit">${cardHTML(f, [f.year, kindLabel(f.t)].filter(Boolean).join(" · "))}
+      <button class="btn ${r ? "primary" : ""}" data-adm="reco" data-id="${esc(f.id)}" aria-pressed="${r}">${r ? "★ Recommandé" : "☆ Recommander"}</button>
+      <button class="btn ${u ? "primary" : ""}" data-adm="feat" data-id="${esc(f.id)}" aria-pressed="${u}">${u ? "✓ À la une" : "Mettre à la une"}</button></div>`; }).join("")}</div>`;
+}
+function admList(key) {
+  const ids = key === "feat" ? reco.featured : reco.ids, list = ids.map(byId).filter(Boolean);
+  if (!list.length) return `<p class="muted" style="margin:0">Vide pour l'instant. Ajoutez des titres avec la recherche plus bas.</p>`;
+  return list.map((f, i) => `<div class="adm-row"><button class="card" data-open="${esc(f.id)}" aria-label="${esc(f.title)}">${poster(f, {mini: true})}</button>
+    <span style="min-width:0"><b>${esc(f.title)}</b><small>${[f.year, kindLabel(f.t)].filter(Boolean).join(" · ")}</small></span>
+    <span class="adm-btns"><button class="btn small" data-adm="up" data-key="${key}" data-id="${esc(f.id)}" ${i ? "" : "disabled"} aria-label="Monter">↑</button><button class="btn small" data-adm="down" data-key="${key}" data-id="${esc(f.id)}" ${i < list.length - 1 ? "" : "disabled"} aria-label="Descendre">↓</button><button class="btn small danger" data-adm="rm" data-key="${key}" data-id="${esc(f.id)}" aria-label="Retirer">✕</button></span></div>`).join("");
+}
+function admRevsHTML() {
+  if (!adm.revs) return `<p class="muted" style="margin:0">Chargement…</p>`;
+  if (!adm.revs.length) return `<p class="muted" style="margin:0">Aucune critique publiée pour l'instant.</p>`;
+  return adm.revs.map(r => { const k = r.user_id + "|" + r.title_id, f = byId(r.title_id);
+    return `<div class="adm-rev"><span style="min-width:0"><b>${esc(r.author?.name || "Cinéphile")}</b> <small>sur ${f ? `<button class="linkish" data-open="${esc(f.id)}">${esc(f.title)}</button>` : esc(r.title_id)} · ${ago(r.updated_at)}</small><p>${esc(r.text)}</p></span>
+      <button class="btn small ${adm.armed === k ? "primary" : "ghost"} danger" data-adm="del-rev" data-id="${esc(k)}">${adm.armed === k ? "Confirmer" : "Supprimer"}</button></div>`; }).join("");
+}
+function viewAdmin() {
+  if (!auth.admin) {
+    $("#main").innerHTML = `<div class="narrow"><div class="view-head"><div><h1>Admin</h1></div></div><div class="empty"><h3>Accès réservé</h3><p>Cette page est réservée au créateur de Filmory.</p><a class="btn primary" href="#accueil">Retour à l'accueil</a></div></div>`;
+    return;
+  }
+  if (!adm.at || Date.now() - adm.at > 60000) loadAdmin();
+  if (!adm.hits) admSearch(adm.q);
+  const tile = (l, v) => `<div class="sp-tile"><span>${l}</span><b class="num">${v ?? "…"}</b></div>`;
+  $("#main").innerHTML = `<div class="narrow">
+    <div class="view-head"><div><div class="eyebrow">Créateur</div><h1>Admin</h1></div></div>
+    <div class="sp-tiles" style="margin-bottom:22px">${tile("Membres", adm.stats?.members)}${tile("Critiques publiées", adm.stats?.reviews)}${tile("Joueurs du quiz", adm.stats?.players)}${tile("Recommandations", reco.ids.length)}</div>
+    <div class="adm-grid">
+      <section class="adm-card"><h2>Nos recommandations · ${reco.ids.length}</h2><p class="note" style="margin:0">Affichées sur l'accueil pour tout le monde, dans cet ordre.</p>${admList("reco")}</section>
+      <section class="adm-card"><h2>À la une · ${reco.featured.length}</h2><p class="note" style="margin:0">Passent en premier dans le grand bandeau d'affiches de l'accueil (7 au plus sont visibles).</p>${admList("feat")}</section>
+    </div>
+    <h2 class="sec-title">${ICON.film} Ajouter des films et des séries</h2>
+    <label class="hsearch" style="width:min(560px,100%);margin-bottom:18px"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="admQ" type="search" placeholder="Chercher sur TMDB (vide : tendances de la semaine)" aria-label="Chercher un film ou une série" value="${esc(adm.q)}" autocomplete="off"></label>
+    <div id="admHits">${admHitsHTML()}</div>
+    <h2 class="sec-title">${ICON.pen} Modération des critiques</h2>
+    <section class="adm-card">${admRevsHTML()}</section>
+  </div>`;
+  $("#admQ").oninput = ev => { adm.q = ev.target.value; clearTimeout(adm.timer); adm.timer = setTimeout(() => admSearch(adm.q), 300); };
+}
+function saveReco() {
+  if (!reco.remote || !reco.canEdit) return;
+  reco.ref.set({ids: reco.ids, featured: reco.featured}).catch(() => toast("La sélection n'a pas pu être enregistrée."));
+}
+document.addEventListener("click", async ev => {
+  const b = ev.target.closest("[data-adm]"); if (!b || !auth.admin) return;
+  const act = b.dataset.adm, id = b.dataset.id, key = b.dataset.key === "feat" ? "featured" : "ids";
+  if (act === "del-rev") {
+    if (adm.armed !== id) { adm.armed = id; viewAdmin(); return; }
+    adm.armed = "";
+    const [user_id, title_id] = id.split("|");
+    const {error} = await auth.sb.from("reviews").delete().match({user_id, title_id});
+    if (error) { toast("Suppression impossible : " + error.message); return; }
+    adm.revs = adm.revs.filter(r => r.user_id + "|" + r.title_id !== id); cr.topAt = 0; delete cr.byTitle[title_id];
+    toast("Critique supprimée"); viewAdmin(); return;
+  }
+  if (!reco.remote) { toast("Les recommandations ne sont pas encore chargées."); return; }
+  if (act === "reco" || act === "feat") {
+    const k = act === "feat" ? "featured" : "ids", on = !reco[k].includes(id);
+    reco[k] = on ? (k === "ids" ? [id, ...reco[k]] : [...reco[k], id]) : reco[k].filter(x => x !== id);
+    toast(on ? (k === "ids" ? "Ajouté aux recommandations" : "Mis à la une") : (k === "ids" ? "Retiré des recommandations" : "Retiré de la une"));
+  } else if (act === "rm") reco[key] = reco[key].filter(x => x !== id);
+  else if (act === "up" || act === "down") {
+    const list = reco[key].slice(), i = list.indexOf(id), j = i + (act === "up" ? -1 : 1);
+    if (i < 0 || j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]]; reco[key] = list;
+  }
+  saveReco(); viewAdmin();
+});
+
 readLocal();
 renderAll();
 initAuth();
