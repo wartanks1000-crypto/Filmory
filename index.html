@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="/icon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><title>Filmory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -450,6 +450,29 @@ button.bb-av{border:0;color:inherit;cursor:pointer}
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 0 120px rgba(120,190,255,.06)}
 @media (prefers-reduced-motion:reduce){.cine-it,.cine-it img{animation-play-state:paused}}
 html.calm .cine-it,html.calm .cine-it img{animation-play-state:paused}
+/* barre d'onglets en bas de l'écran (téléphone uniquement) */
+.btabs,.bsheet{display:none}
+@media (max-width:760px){
+  nav.tabs{display:none}
+  .btabs{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:34;
+    padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(14,14,19,.9);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);box-shadow:0 -1px 0 var(--line)}
+  .btabs a,.btabs button{display:grid;justify-items:center;gap:3px;padding:6px 0 4px;min-height:50px;border:0;background:none;color:var(--muted);font:inherit;font-size:11px;font-weight:800;text-decoration:none;border-radius:12px;-webkit-tap-highlight-color:transparent}
+  .btabs svg.i{width:24px;height:24px}
+  .btabs [aria-current="page"]{color:var(--fg)}
+  .btabs [aria-current="page"] svg.i{stroke-width:2.6}
+  .btabs a:active,.btabs button:active{transform:scale(.92)}
+  main{padding-bottom:calc(110px + env(safe-area-inset-bottom,0px))}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  .chat-fab:not([style*="left"]){bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .chat-panel:not([style*="left"]):not([style*="right"]){bottom:calc(146px + env(safe-area-inset-bottom,0px));height:min(560px,calc(100dvh - 220px))}
+  /* menu « Plus » : feuille qui monte depuis la barre */
+  .bsheet{display:block;position:fixed;inset:0;z-index:33}
+  .bsheet[hidden]{display:none}
+  .bsheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+  .bsheet-in{position:absolute;left:10px;right:10px;bottom:calc(74px + env(safe-area-inset-bottom,0px));background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:8px;box-shadow:0 -10px 40px rgba(0,0,0,.5);display:grid}
+  .bsheet-in a{display:flex;align-items:center;gap:14px;padding:14px 12px;border-radius:12px;color:var(--fg);text-decoration:none;font-weight:800;font-size:16px}
+  .bsheet-in a:active,.bsheet-in a[aria-current="page"]{background:var(--surface-2)}
+}
 /* bulle de messagerie déplaçable */
 .chat-fab{touch-action:none;cursor:grab}
 .chat-fab.dragging{animation:none;transform:scale(1.12);cursor:grabbing;transition:none}
@@ -1006,6 +1029,8 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
   <section class="chat-panel" id="chatPanel" aria-label="Messages" hidden></section>
 </div>
 <div class="toast" id="toast" hidden></div>
+<nav class="btabs" id="btabs" aria-label="Navigation principale"></nav>
+<div class="bsheet" id="bsheet" hidden><div class="bsheet-bg" data-bsheet-close></div><div class="bsheet-in" id="bsheetIn" role="menu" aria-label="Plus de sections"></div></div>
 
 <script>
 /* ===================== TMDB ===================== */
@@ -1417,6 +1442,7 @@ function renderAll() {
   ui.member = mm ? mm[1].toLowerCase() : null;
   ui.view = mm ? "membre" : VIEWS.includes(v) ? v : "accueil";
   $$("nav.tabs a").forEach(a => a.dataset.v === ui.view ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  renderBtabs();
   renderMeBtn();
   document.documentElement.classList.toggle("calm", pref("reduce", false)); // fond de cinéma figé si « Réduire les animations »
   $("#main").className = ui.view === "accueil" ? "home" : "";
@@ -3151,6 +3177,34 @@ async function loadDemo() {
     save("lib"); toast("Exemples chargés, marqués « exemple »"); renderAll();
   } catch { toast("TMDB ne répond pas : les exemples n'ont pas pu être chargés."); }
 }
+/* ===================== Barre d'onglets du bas (téléphone) ===================== */
+const BT_ICON = {
+  home: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M5.5 9v11h13V9"/><path d="M10 20v-5h4v5"/></svg>',
+  watch: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11v17L12 16.5l-5.5 4z"/></svg>',
+  more: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>',
+};
+// sections rangées dans « Plus » (Vote et Admin seulement si leur onglet est visible)
+const moreItems = () => [["journal", ICON.pen, "Journal"], ["collection", ICON.film, "Collection"], ["critiques", ICON.chat, "Critiques"],
+  ...(!$("#navVote").hidden ? [["filmdumois", ICON.trophy, "Film du mois"]] : []), ...(!$("#navAdmin").hidden ? [["admin", ICON.gear, "Admin"]] : [])];
+function renderBtabs() {
+  const cur = v => ui.view === v ? ' aria-current="page"' : "";
+  const inMore = moreItems().some(([v]) => v === ui.view);
+  $("#btabs").innerHTML = `<a href="#accueil"${cur("accueil")}>${BT_ICON.home}<span>Accueil</span></a>
+    <a href="#parcourir"${cur("parcourir")}>${ICON.film}<span>Films</span></a>
+    <a href="#watchlist"${cur("watchlist")}>${BT_ICON.watch}<span>Watchlist</span></a>
+    <a href="#quiz"${cur("quiz")}>${ICON.trophy}<span>Quiz</span></a>
+    <button type="button" id="btMore" aria-haspopup="menu" aria-expanded="${!$("#bsheet").hidden}"${inMore ? ' aria-current="page"' : ""}>${BT_ICON.more}<span>Plus</span></button>`;
+  $("#bsheetIn").innerHTML = moreItems().map(([v, ic, l]) => `<a role="menuitem" href="#${v}"${cur(v)}>${ic}<span>${l}</span></a>`).join("");
+}
+function toggleBsheet(open) {
+  const s = $("#bsheet"); open ??= s.hidden;
+  s.hidden = !open; $("#btMore")?.setAttribute("aria-expanded", String(open));
+  if (open && !reducedMotion()) $("#bsheetIn").animate([{transform: "translateY(24px)", opacity: 0}, {transform: "none", opacity: 1}], {duration: 220, easing: "cubic-bezier(.2,.8,.2,1)"});
+}
+$("#btabs").addEventListener("click", ev => { if (ev.target.closest("#btMore")) toggleBsheet(); else toggleBsheet(false); });
+$("#bsheet").addEventListener("click", ev => { if (ev.target.closest("[data-bsheet-close], a")) toggleBsheet(false); });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape" && !$("#bsheet").hidden) toggleBsheet(false); });
+
 /* ===================== Fond de cinéma ===================== */
 // Objets entiers détourés (PNG transparents Pixabay, licence gratuite, usage commercial autorisé), hébergés dans fond/.
 (() => {
