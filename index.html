@@ -778,10 +778,14 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 .pod b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pod small{color:var(--muted);font-size:12.5px}
 /* accueil : calendrier et podium du quiz côte à côte */
-.home-duo{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start;max-width:1400px;margin-inline:auto}
-.home-duo .cal{max-width:none;margin:0}
+/* le titre du calendrier occupe sa propre ligne : le podium commence pile à la hauteur des cartes « Mercredi » */
+.home-duo{display:grid;grid-template-columns:minmax(0,1fr) 330px;grid-template-areas:"t ." "c q";column-gap:28px;align-items:start}
+.home-duo.solo{grid-template-columns:minmax(0,1fr);grid-template-areas:"t" "c";max-width:1260px;margin-inline:auto}
+.home-duo > .sec-title{grid-area:t}
+.home-duo > .cal{grid-area:c;max-width:none;margin:0}
+.home-duo > .home-quiz{grid-area:q}
 .home-duo .cal-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
-.home-quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 16px 18px;margin-top:38px}
+.home-quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 16px 18px}
 .home-quiz .sec-title{margin:16px 0 0;font-size:19px}
 .hq-month{font-size:13px;font-weight:700;color:var(--muted);text-transform:capitalize;margin:2px 0 14px}
 .podium3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:6px}
@@ -796,7 +800,7 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 .pd1 .pd-step{height:130px;background:linear-gradient(180deg,#fcd34d,#d4a017)}
 .pd2 .pd-step{height:95px;background:linear-gradient(180deg,#e5e7eb,#9ca3af)}
 .pd3 .pd-step{height:70px;background:linear-gradient(180deg,#e7a978,#b06a3b)}
-@media (max-width:1100px){.home-duo{grid-template-columns:minmax(0,1fr)}.home-quiz{max-width:420px}}
+@media (max-width:1100px){.home-duo{grid-template-columns:minmax(0,1fr);grid-template-areas:"t" "c" "q"}.home-quiz{max-width:420px;margin-top:24px}}
 @media (max-width:560px){.podium{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- messagerie ---------- */
@@ -1378,9 +1382,9 @@ function viewHome() {
       </div>` : `<div class="row-empty">Aucun vote pour ${monthName()} pour l'instant. Les votes se font dans l'onglet Vote.</div>`}
     </section>` : ""}
 
-    <div class="${auth.sb ? "home-duo" : ""}">
+    <div class="home-duo ${auth.sb ? "" : "solo"}">
+    <h2 class="sec-title" id="calT">${ICON.cal} Calendrier des sorties</h2>
     <section class="cal" aria-labelledby="calT">
-      <h2 class="sec-title" id="calT">${ICON.cal} Calendrier des sorties</h2>
       <div class="cal-grid">${SORTIES.map(s => `
         <div class="day ${s.date===curWeek?"on":""}">
           <h3>${fmtDate(s.date,{weekday:"long"}).replace(/^./, c => c.toUpperCase())}<small>${fmtDate(s.date,{day:"numeric",month:"long"})}${s.date===curWeek?" · cette semaine":""}</small></h3>
