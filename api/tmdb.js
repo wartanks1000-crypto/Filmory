@@ -1,4 +1,4 @@
-// Relais TMDB pour Pellicule (fonction serveur Vercel).
+// Relais TMDB pour Filmory (fonction serveur Vercel).
 // Le jeton TMDB reste ici, côté serveur : il est lu dans la variable d'environnement TMDB_TOKEN
 // (le « Jeton d'accès en lecture à l'API » de votre compte TMDB) et n'apparaît jamais dans la page.
 

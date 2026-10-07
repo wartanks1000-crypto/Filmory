@@ -1,5 +1,5 @@
 {
-  "name": "pellicule",
+  "name": "filmory",
   "private": true,
   "type": "module",
   "engines": { "node": ">=18" }

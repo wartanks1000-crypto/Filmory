@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0e0e11">
-<meta name="description" content="Pellicule : notez vos films et séries, écrivez vos critiques, tenez votre journal et votre collection.">
+<meta name="description" content="Filmory : notez vos films et séries, écrivez vos critiques, tenez votre journal et votre collection.">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/icon.svg">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><title>Pellicule</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><title>Filmory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap">
@@ -653,7 +653,7 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 
 <header class="top" id="top">
   <div class="top-in">
-    <a class="logo" href="#accueil" aria-label="Pellicule, accueil" title="Accueil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5v17l15-8.5z"/></svg><b>Pellicule</b></a>
+    <a class="logo" href="#accueil" aria-label="Filmory, accueil" title="Accueil"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5v17l15-8.5z"/></svg><b>Filmory</b></a>
     <nav class="tabs" aria-label="Sections">
       <a href="#parcourir" data-v="parcourir">Films &amp; séries</a>
       <a href="#journal" data-v="journal">Journal</a>
@@ -1474,7 +1474,7 @@ function viewFriends() {
         ${vote && byId(vote) ? `<div class="fr-vote">${ICON.trophy} A voté pour <button class="linkish" data-open="${esc(vote)}">${esc(byId(vote).title)}</button> ce mois-ci</div>` : ""}
         ${favs.length ? `<div><span class="fr-k">Films favoris</span><div class="fr-posters">${favs.map(f => `<button class="card" data-open="${esc(f.id)}" aria-label="${esc(f.title)}">${poster(f, {mini:true})}</button>`).join("")}</div></div>` : ""}
         ${recent.length ? `<div><span class="fr-k">Vus récemment</span><div class="fr-posters six">${recent.map(x => `<button class="card" data-open="${esc(x.f.id)}" aria-label="${esc(x.f.title)}">${poster(x.f, {mini:true})}<span class="stars-s" style="font-size:11px">${starsText(x.r)}</span></button>`).join("")}</div></div>` : ""}`
-      : `<p class="muted" style="margin:0">${friendCache.hasOwnProperty(id) ? "Pas encore de profil public : cette personne n'a pas ouvert Pellicule ou garde son profil privé." : "Chargement…"}</p>`}
+      : `<p class="muted" style="margin:0">${friendCache.hasOwnProperty(id) ? "Pas encore de profil public : cette personne n'a pas ouvert Filmory ou garde son profil privé." : "Chargement…"}</p>`}
     </article>`;
   };
   $("#main").innerHTML = `<div class="narrow">
@@ -1681,7 +1681,7 @@ async function saveUserTickets(uid, list) {
   try { await dbNS.doc("support/" + uid).set({tickets: list}); } catch { toast("La réponse n'a pas pu être enregistrée."); }
 }
 function threadHTML(t, who) {
-  return `<div class="thread">${t.messages.map(m => `<div class="msg ${m.from}"><span class="mfrom">${m.from === "support" ? "Support Pellicule" : (who || "Vous")} · ${fmtDate(m.at, {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})}</span><p>${esc(m.text)}</p></div>`).join("")}</div>`;
+  return `<div class="thread">${t.messages.map(m => `<div class="msg ${m.from}"><span class="mfrom">${m.from === "support" ? "Support Filmory" : (who || "Vous")} · ${fmtDate(m.at, {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"})}</span><p>${esc(m.text)}</p></div>`).join("")}</div>`;
 }
 function ticketHTML(t, {inbox = false, uid = ""} = {}) {
   const who = inbox ? (support.names[uid]?.name || "Utilisateur") : "Vous";
@@ -1766,7 +1766,7 @@ let planBilling = "month", planPending = null;
 function viewPlans() {
   if (planOf().creator) {
     $("#main").innerHTML = `<div class="narrow"><div class="view-head"><div><div class="eyebrow">Mon profil</div><h1>Abonnement</h1></div></div>
-      <div class="set-card" style="padding:20px 22px"><b style="font-size:18px">Vous êtes le créateur de Pellicule</b><p class="muted" style="margin:6px 0 0;font-weight:600">Tous les avantages sont débloqués pour vous, sans abonnement : statistiques, couleurs exclusives, badge et support prioritaire. Voici les plans proposés aux visiteurs.</p></div>
+      <div class="set-card" style="padding:20px 22px"><b style="font-size:18px">Vous êtes le créateur de Filmory</b><p class="muted" style="margin:6px 0 0;font-weight:600">Tous les avantages sont débloqués pour vous, sans abonnement : statistiques, couleurs exclusives, badge et support prioritaire. Voici les plans proposés aux visiteurs.</p></div>
       <div class="plans" style="margin-top:18px">${PLANS.map(p => `<article class="plan ${p.id === "plus" ? "hot" : ""}">${p.id === "plus" ? `<span class="plan-flag">Le plus complet</span>` : ""}<h2>${esc(p.name)}</h2>
         <div class="price"><b class="num">${p.month ? String(p.month).replace(".", ",") + " €" : "0 €"}</b><span>${p.month ? "par mois" : "pour toujours"}</span></div>
         <ul>${p.perks.map(x => `<li>${esc(x)}</li>`).join("")}</ul><button class="btn" disabled>Inclus pour vous</button></article>`).join("")}</div></div>`;
@@ -1785,7 +1785,7 @@ function viewPlans() {
         <div class="price"><b class="num">${price(p)}</b><span>${p.month === 0 ? "pour toujours" : planBilling === "month" ? "par mois" : "par an"}</span></div>
         <ul>${p.perks.map(x => `<li>${esc(x)}</li>`).join("")}</ul>
         ${p.id === cur.id ? `<button class="btn" disabled>Plan actuel</button>`
-          : planPending === p.id ? `<div class="plan-confirm"><p>Le paiement n'est pas encore en place sur Pellicule : le plan ${esc(p.name)} est activé gratuitement, sans carte bancaire.</p><div class="row-btns"><button class="btn primary" data-plan-ok="${p.id}">Activer ${esc(p.name)}</button><button class="btn ghost" data-plan-cancel>Annuler</button></div></div>`
+          : planPending === p.id ? `<div class="plan-confirm"><p>Le paiement n'est pas encore en place sur Filmory : le plan ${esc(p.name)} est activé gratuitement, sans carte bancaire.</p><div class="row-btns"><button class="btn primary" data-plan-ok="${p.id}">Activer ${esc(p.name)}</button><button class="btn ghost" data-plan-cancel>Annuler</button></div></div>`
           : `<button class="btn ${p.id === "free" ? "" : "primary"}" data-plan="${p.id}">${p.id === "free" ? "Revenir au plan Gratuit" : `Choisir ${esc(p.name)}`}</button>`}
       </article>`).join("")}</div>
     ${cur.id !== "free" ? `<p class="note" style="margin-top:18px">Abonné ${esc(cur.name)} depuis le ${fmtDate(state.profile.plan.since)}. Vous pouvez changer de plan à tout moment.</p>` : ""}
@@ -1885,7 +1885,7 @@ function openPoster3D(id) {
             ${e.date ? `<span><span class="bk-k">Vu le</span>${fmtDate(e.date)}</span>` : ""}
             ${rev}
           </div>
-          <div class="bk-foot"><span class="barcode"><i></i></span><span class="bk-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5v17l15-8.5z"/></svg>Pellicule</span></div>
+          <div class="bk-foot"><span class="barcode"><i></i></span><span class="bk-logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3.5v17l15-8.5z"/></svg>Filmory</span></div>
         </div>
         <div class="bf left"><span>${esc(f.title)}</span></div>
         <div class="bf right"></div>

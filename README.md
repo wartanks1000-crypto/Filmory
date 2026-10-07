@@ -1,4 +1,4 @@
-# Pellicule : version site (étape 1)
+# Filmory : version site (étape 1)
 
 Le site tient en quelques fichiers :
 
@@ -21,25 +21,25 @@ Les votes, les amis, le support et la synchronisation entre appareils arriveront
    Ne le collez nulle part ailleurs que dans Vercel (étape 3).
 
 ### 2. Mettre les fichiers sur GitHub
-1. Créez un compte sur https://github.com, puis un nouveau dépôt (**New repository**), par exemple `pellicule`.
+1. Créez un compte sur https://github.com, puis un nouveau dépôt (**New repository**), par exemple `filmory`.
 2. Dans le dépôt, cliquez sur **Add file → Upload files** et glissez le **contenu** du dossier `site`
    (`index.html`, `package.json`, `manifest.webmanifest`, `icon.svg`, `README.md` et le dossier `api`).
 3. Validez avec **Commit changes**.
 
 ### 3. Héberger sur Vercel
 1. Créez un compte sur https://vercel.com avec **Continue with GitHub**.
-2. **Add New → Project**, choisissez le dépôt `pellicule`, puis **Import**.
+2. **Add New → Project**, choisissez le dépôt `filmory`, puis **Import**.
 3. Avant de déployer, ouvrez **Environment Variables** et ajoutez :
    - Name : `TMDB_TOKEN`
    - Value : le jeton TMDB copié à l'étape 1
-4. Cliquez sur **Deploy**. Vercel vous donne une adresse du type `https://pellicule-xxx.vercel.app`.
+4. Cliquez sur **Deploy**. Vercel vous donne une adresse du type `https://filmory-xxx.vercel.app`.
 
 ### 4. Sur le téléphone
 Ouvrez l'adresse dans le navigateur, puis :
 - **iPhone (Safari)** : bouton Partager → **Sur l'écran d'accueil** ;
 - **Android (Chrome)** : menu ⋮ → **Ajouter à l'écran d'accueil**.
 
-Pellicule s'ouvre alors en plein écran, comme une application.
+Filmory s'ouvre alors en plein écran, comme une application.
 
 ## Mettre à jour le site
 Remplacez `index.html` dans GitHub (**Add file → Upload files**). Vercel redéploie tout seul en une minute.

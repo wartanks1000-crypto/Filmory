@@ -1,5 +1,5 @@
 -- ============================================================
--- Pellicule : tables, règles de sécurité (RLS) et temps réel
+-- Filmory : tables, règles de sécurité (RLS) et temps réel
 -- À coller une seule fois dans Supabase → SQL Editor → Run.
 -- ============================================================
 
