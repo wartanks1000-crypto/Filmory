@@ -371,6 +371,39 @@ button.bb-av{border:0;color:inherit;cursor:pointer}
 .mb-actions{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:6px}
 .mb-people{display:flex;flex-wrap:wrap;gap:8px}
 .mb-person{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-weight:800;font-size:14px}
+/* contours de photo de profil : l'anneau est dessiné dans la bordure (padding-box = fond, border-box = anneau) */
+@property --fa{syntax:"<angle>";inherits:false;initial-value:0deg}
+.fr{border-style:solid!important;border-color:transparent!important;background:linear-gradient(var(--surface-2),var(--surface-2)) padding-box,var(--ring) border-box!important}
+.avatar.fr{border-width:5px;box-shadow:0 0 0 3px var(--bg),0 8px 24px rgba(0,0,0,.45)}
+.bb-av.fr,.me-btn .av.fr{border-width:2px}
+.bb-av.lg.fr{border-width:3px}
+.fr-or{--ring:linear-gradient(135deg,#7a5410,#f9e08b 28%,#c8962e 50%,#fff4c2 68%,#a87a1e)}
+.fr-argent{--ring:linear-gradient(135deg,#5f5f69,#f4f4f8 30%,#9d9da7 52%,#fff 70%,#74747e)}
+.fr-arcenciel,.fr-arcenciel-vif{--ring:conic-gradient(from var(--fa),#ff4d4d,#ffa64d,#ffe14d,#5bd75b,#4dd2ff,#6a6aff,#d24dff,#ff4d4d)}
+.fr-or-vif{--ring:conic-gradient(from var(--fa),#8a6212,#ffe9a0,#c8962e,#fff8d6,#8a6212,#f2cf6b,#8a6212)}
+.fr-neon{--ring:conic-gradient(from var(--fa),#00e5ff,#12121a 25%,#ff2bd6 50%,#12121a 75%,#00e5ff)}
+.avatar.fr-neon{box-shadow:0 0 0 3px var(--bg),0 0 22px rgba(0,229,255,.45),0 0 34px rgba(255,43,214,.3)}
+.fr-feu{--ring:conic-gradient(from var(--fa),#ff2a00,#ffb000,#ff5a00,#ffd54a,#e00000,#ff8a00,#ff2a00)}
+.avatar.fr-feu{box-shadow:0 0 0 3px var(--bg),0 0 26px rgba(255,90,0,.45)}
+.fr-or-vif,.fr-arcenciel-vif,.fr-neon{animation:frSpin 3s linear infinite}
+.fr-feu{animation:frSpin 1.4s linear infinite}
+@keyframes frSpin{to{--fa:360deg}}
+@media (prefers-reduced-motion:reduce){.fr{animation:none!important}}
+.frame-pick{display:flex;flex-wrap:wrap;gap:10px}
+.frame-pick .fp{display:grid;justify-items:center;gap:6px;width:88px;padding:10px 4px;border-radius:12px;border:2px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.frame-pick .fp.on{border-color:var(--fg)}
+.frame-pick .fp small{font-size:11.5px;font-weight:800;line-height:1.2;text-align:center}
+/* calendrier : petite affiche à gauche du titre */
+.day li.cal-it{display:flex;align-items:center;gap:9px;text-align:left;padding:4px 0}
+.day li.cal-it .cal-p{width:34px;flex:none;border-radius:5px;overflow:hidden;transition:transform .15s}
+.day li.cal-it .cal-p:hover{transform:scale(1.06);text-decoration:none}
+.day li.cal-it .cal-p .poster{border-radius:5px}
+.day li.cal-it .cal-tx{min-width:0;display:grid}
+.day li.cal-it .cal-tx button{text-align:left}
+.day li.cal-it small{display:block}
+/* bulle de messagerie déplaçable */
+.chat-fab{touch-action:none;cursor:grab}
+.chat-fab.dragging{animation:none;transform:scale(1.12);cursor:grabbing;transition:none}
 .fr-k{display:block;font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .fr-posters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
 .fr-posters.six{grid-template-columns:repeat(6,minmax(0,1fr))}
@@ -1127,6 +1160,10 @@ const ACCENTS = {blanc:["#1a1a1f","#e8e8ec"],graphite:["#0e0e11","#4a4a55"],arge
 // couleurs de bannière réservées aux abonnés
 const ACCENTS_PLUS = {or:["#2a1d05","#e8b93a"],aurore:["#0b2230","#ff7a6b"],nuit:["#05060f","#3a4a8a"]};
 const ALL_ACCENTS = {...ACCENTS, ...ACCENTS_PLUS};
+// contours de la photo de profil (« vif » = anneau qui tourne)
+const FRAMES = [{id: "", name: "Classique"}, {id: "or", name: "Or"}, {id: "argent", name: "Argent"}, {id: "arcenciel", name: "Arc-en-ciel"},
+  {id: "or-vif", name: "Or scintillant"}, {id: "arcenciel-vif", name: "Arc-en-ciel animé"}, {id: "neon", name: "Néon"}, {id: "feu", name: "Feu"}];
+const frameCls = id => id && FRAMES.some(f => f.id === id) ? ` fr fr-${id}` : "";
 // Abonnements : activés sans paiement (pas de paiement branché dans la page)
 const PLANS = [
   {id:"free", name:"Gratuit", month:0, year:0, perks:["Journal, notes et critiques illimités","Collection, portfolios et affiches 3D","Tout le catalogue TMDB et ses bandes-annonces"]},
@@ -1338,6 +1375,7 @@ function renderAll() {
 function renderMeBtn() {
   const p = state.profile;
   $("#meLbl").textContent = auth.sb && !auth.user ? "Se connecter" : "Mon profil";
+  $("#meAv").className = "av" + frameCls(p.frame);
   $("#meAv").innerHTML = p.avatar ? `<img alt="" src="${esc(p.avatar)}">` : esc(initials(p.name || viewerName || "Moi"));
 }
 function cardHTML(f, sub = "") {
@@ -1348,6 +1386,8 @@ function cardHTML(f, sub = "") {
 
 /* ----- Accueil ----- */
 let heroIdx = 0, heroTimer = null;
+const calItem = (f, sub = "") => `<li class="cal-it"><button class="cal-p" data-open="${esc(f.id)}" tabindex="-1" aria-hidden="true">${poster(f, {mini: true})}</button>
+  <span class="cal-tx"><button data-open="${esc(f.id)}">${esc(f.title)}</button>${sub ? `<small>${sub}</small>` : ""}</span></li>`;
 function viewHome() {
   if (homeState !== "ready") {
     if (homeState === "idle") loadHome(); // après une erreur, on attend « Réessayer » au lieu de boucler
@@ -1404,8 +1444,8 @@ function viewHome() {
       <div class="cal-grid">${SORTIES.map(s => `
         <div class="day ${s.date===curWeek?"on":""}">
           <h3>${fmtDate(s.date,{weekday:"long"}).replace(/^./, c => c.toUpperCase())}<small>${fmtDate(s.date,{day:"numeric",month:"long"})}${s.date===curWeek?" · cette semaine":""}</small></h3>
-          <ul><li class="cal-k">Films</li>${s.films.length ? s.films.map(f => `<li><button data-open="${esc(f.id)}">${esc(f.title)}</button></li>`).join("") : `<li>Aucune sortie</li>`}
-          ${s.series.length ? `<li class="cal-k">Séries</li>` + s.series.map(f => `<li><button data-open="${esc(f.id)}">${esc(f.title)}</button><small>${fmtDate(f.release, {day:"numeric", month:"short"})}</small></li>`).join("") : ""}</ul>
+          <ul><li class="cal-k">Films</li>${s.films.length ? s.films.map(f => calItem(f)).join("") : `<li>Aucune sortie</li>`}
+          ${s.series.length ? `<li class="cal-k">Séries</li>` + s.series.map(f => calItem(f, fmtDate(f.release, {day:"numeric", month:"short"}))).join("") : ""}</ul>
         </div>`).join("")}</div>
     </section>
     ${auth.sb ? `<section class="home-quiz" aria-labelledby="podT">
@@ -1673,7 +1713,7 @@ async function publishPublic() {
       avatar: p.avatar && p.avatar.length < 90000 ? p.avatar : "", plan: badgeId(),
       favFilms: p.favFilms, favSeries: p.favSeries, favActors: p.favActors.slice(0, 12), favDirectors: p.favDirectors.slice(0, 12),
       banner: p.banner || "", bannerImg: p.bannerImg && p.bannerImg.length < 200000 ? p.bannerImg : "", bannerH: p.bannerH || 0,
-      accent: accentAllowed(p.accent) ? p.accent : "blanc", friends: p.friends.length,
+      accent: accentAllowed(p.accent) ? p.accent : "blanc", friends: p.friends.length, frame: p.frame || "",
       films: all.filter(x => x.f.t === "film").length, series: all.filter(x => x.f.t === "serie").length,
       reviews: Object.values(state.lib.entries).filter(e => e.review).length,
       avg: rated.length ? Math.round(rated.reduce((s,e) => s + e.rating, 0) / rated.length * 10) / 10 : 0,
@@ -1748,7 +1788,7 @@ function viewFriends() {
     const favs = (d?.favFilms || []).map(byId).filter(Boolean).slice(0, 4);
     const recent = (d?.recent || []).map(x => ({f: byId(x.id), r: x.r})).filter(x => x.f).slice(0, 6);
     return `<article class="friend">
-      <div class="fr-head"><button class="bb-av lg crev-user" data-user="${esc(id)}" aria-label="Voir le profil">${av ? `<img alt="" src="${esc(av)}">` : esc(initials(name))}</button>
+      <div class="fr-head"><button class="bb-av lg crev-user${frameCls(d?.frame)}" data-user="${esc(id)}" aria-label="Voir le profil">${av ? `<img alt="" src="${esc(av)}">` : esc(initials(name))}</button>
         <span style="min-width:0;flex:1"><button class="linkish plain fr-name" data-user="${esc(id)}"></button><small class="muted">${d?.handle ? "@" + esc(d.handle) : ""} ${planBadge(d?.plan)}</small></span>
         <button class="btn small" data-chat-with="${esc(id)}">Message</button><button class="btn ghost small" data-unfriend="${esc(id)}">Retirer</button></div>
       ${d ? `<div class="fr-stats"><span><b class="num">${d.films}</b> films</span><span><b class="num">${d.series}</b> séries</span><span><b class="num">${d.reviews}</b> critiques</span><span><b class="num">${d.avg ? String(d.avg).replace(".", ",") : "–"}</b> moyenne</span></div>
@@ -1818,7 +1858,7 @@ async function loadMember(id) {
     if (mb.id !== id) return;
     if (pub.error || revs.error) throw pub.error || revs.error;
     mb.data = pub.data?.data || null;
-    if (mb.data) { registerTitles(mb.data.titles); peopleCache[id] = {id, name: mb.data.name || (mb.data.handle ? "@" + mb.data.handle : ""), avatarUrl: mb.data.avatar || NO_AV}; }
+    if (mb.data) { registerTitles(mb.data.titles); peopleCache[id] = {id, name: mb.data.name || (mb.data.handle ? "@" + mb.data.handle : ""), avatarUrl: mb.data.avatar || NO_AV, frame: mb.data.frame || ""}; }
     mb.revs = (revs.data || []).map(r => {
       const l = (likes.data || []).filter(x => x.title_id === r.title_id);
       if (r.title) registerTitles([r.title]);
@@ -1859,7 +1899,7 @@ function viewMember() {
   $("#main").innerHTML = `<div class="narrow">
     <div class="banner" style="--b1:${b1};--b2:${b2};${d?.bannerImg ? `height:auto;aspect-ratio:1200/${d.bannerH || 320}` : ""}">${bimg}</div>
     <div class="pf-head">
-      <div class="avatar">${d?.avatar ? `<img alt="Photo de profil" src="${esc(d.avatar)}">` : esc(initials(name))}</div>
+      <div class="avatar${frameCls(d?.frame)}">${d?.avatar ? `<img alt="Photo de profil" src="${esc(d.avatar)}">` : esc(initials(name))}</div>
       <div class="pf-id"><h1 id="mbName"></h1><div class="handle">${handle ? "@" + esc(handle) : ""} ${planBadge(d?.plan)}</div></div>
       ${actions}
     </div>
@@ -2393,7 +2433,7 @@ function viewProfile() {
   $("#main").innerHTML = `<div class="narrow">
     <div class="banner" style="--b1:${b1};--b2:${b2};${p.bannerImg ? `height:auto;aspect-ratio:1200/${p.bannerH || 320}` : ""}">${bimg}</div>
     <div class="pf-head">
-      <div class="avatar">${p.avatar ? `<img alt="Photo de profil" src="${esc(p.avatar)}">` : esc(initials(name))}</div>
+      <div class="avatar${frameCls(p.frame)}">${p.avatar ? `<img alt="Photo de profil" src="${esc(p.avatar)}">` : esc(initials(name))}</div>
       <div class="pf-id"><h1>${esc(name)}</h1><div class="handle">@${esc(p.handle || "cinephile")} ${planBadge(badgeId())} ${myQuizBadge()}</div></div>
       <button class="btn primary" data-act="edit-profile">Modifier le profil</button>
     </div>
@@ -2787,6 +2827,9 @@ function renderProfileEditor() {
           ${d.avatar ? `<label class="lbl">Zoom<input type="range" id="avZoom" min="1" max="5" step="0.01" value="${avCrop.zoom}" style="accent-color:#fff"></label><span class="note">Glissez la photo dans le cercle pour la placer.</span>` : ""}
         </div>
       </div>
+      <div class="full" style="display:grid;gap:8px"><span class="lbl">Contour de la photo</span>
+        <div class="frame-pick" role="radiogroup" aria-label="Contour de la photo">${FRAMES.map(f => { const on = (d.frame || "") === f.id;
+          return `<button type="button" class="fp ${on ? "on" : ""}" data-frame="${f.id}" role="radio" aria-checked="${on}"><span class="bb-av lg${frameCls(f.id)}">${d.avatar ? `<img alt="" src="${esc(d.avatar)}">` : esc(initials(d.name || "Moi"))}</span><small>${f.name}</small></button>`; }).join("")}</div></div>
       <label class="lbl">Nom affiché<input class="input" id="pName" maxlength="40" value="${esc(d.name)}"></label>
       <label class="lbl">Pseudo<input class="input" id="pHandle" maxlength="24" value="${esc(d.handle)}" placeholder="cinephile"></label>
       <div class="full" style="display:grid;gap:8px"><span class="lbl">Bannière</span>
@@ -2805,6 +2848,10 @@ function renderProfileEditor() {
     </div>`;
   const keep = () => { d.name = $("#pName").value; d.handle = $("#pHandle").value.replace(/^@/, "").replace(/\s+/g, ""); };
   ["pName","pHandle"].forEach(id => $("#"+id).oninput = keep);
+  $$("[data-frame]").forEach(b => b.onclick = () => {
+    d.frame = b.dataset.frame;
+    $$("[data-frame]").forEach(x => { const on = x === b; x.classList.toggle("on", on); x.setAttribute("aria-checked", String(on)); });
+  });
   $("#pAvatar").onchange = ev => { const file = ev.target.files[0]; if (file) { keep(); loadAvatar(file); } };
   $("#pBannerImg").onchange = ev => { const file = ev.target.files[0]; if (file) { keep(); loadBannerImg(file); } };
   setupBannerCrop(); setupAvatarCrop();
@@ -3030,7 +3077,10 @@ document.addEventListener("keydown", ev => {
   else if (ev.key === "ArrowUp") { ev.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
 });
 $("#meMenu").addEventListener("click", ev => { if (ev.target.closest("[role=menuitem]")) toggleMenu(false); });
-$$("dialog:not(#dlgDetail)").forEach(d => d.addEventListener("click", ev => { if (ev.target === d) d.close(); }));
+$$("dialog:not(#dlgDetail):not(#dlgAuth)").forEach(d => d.addEventListener("click", ev => { if (ev.target === d) d.close(); }));
+// connexion : un clic à côté ou la touche Échap ne ferment pas la fenêtre (on garde l'e-mail et le mot de passe tapés) ; seule la croix ferme
+$("#dlgAuth").addEventListener("cancel", ev => ev.preventDefault());
+$("#dlgAuth").addEventListener("keydown", ev => { if (ev.key === "Escape") ev.preventDefault(); }); // sinon Chrome ferme au 2e Échap
 $("#dlgDetail").addEventListener("click", ev => { if (!dive && ev.target.matches("#dlgDetail, .dlg, .stage, .dvd")) closeDetail(); });
 $("#dlgDetail").addEventListener("cancel", ev => { ev.preventDefault(); dive ? exitTrailer() : closeDetail(); });
 $("#dlgDetail").addEventListener("close", () => { exitTrailer(true); curId = null; });
@@ -3136,7 +3186,7 @@ const sbUser = {
     const out = Object.fromEntries(ids.map(id => [id, {id, name: "", avatarUrl: NO_AV}]));
     if (!ids.length) return out;
     const {data} = await auth.sb.from("public_profiles").select("id,data").in("id", ids);
-    (data || []).forEach(r => out[r.id] = {id: r.id, name: r.data?.name || (r.data?.handle ? "@" + r.data.handle : ""), avatarUrl: r.data?.avatar || NO_AV});
+    (data || []).forEach(r => out[r.id] = {id: r.id, name: r.data?.name || (r.data?.handle ? "@" + r.data.handle : ""), avatarUrl: r.data?.avatar || NO_AV, frame: r.data?.frame || ""});
     return out;
   },
   async search(q) {
@@ -3263,7 +3313,7 @@ async function loadPeople(ids) {
 const nameOf = (id, fallback = "Quelqu'un") => peopleCache[id]?.name || friendCache[id]?.name || fallback;
 function avHTML(id, name) {
   const a = id === myId() ? state.profile.avatar : peopleCache[id]?.avatarUrl;
-  return `<span class="bb-av">${a && a !== NO_AV ? `<img alt="" src="${esc(a)}">` : esc(initials(name))}</span>`;
+  return `<span class="bb-av${frameCls(id === myId() ? state.profile.frame : peopleCache[id]?.frame)}">${a && a !== NO_AV ? `<img alt="" src="${esc(a)}">` : esc(initials(name))}</span>`;
 }
 
 /* ----- Notifications ----- */
@@ -3722,13 +3772,14 @@ function openChat(peer = null, attach) {
   const panel = $("#chatPanel"), wasHidden = panel.hidden;
   chat.closeAnim?.cancel(); chat.closeAnim = null;
   panel.hidden = false; $("#chatFab").setAttribute("aria-expanded", "true");
+  placeChatPanel();
   renderChat();
   if (wasHidden && !reducedMotion()) inflateChat(panel);
 }
 // Ouverture : la fenêtre se gonfle depuis la bulle, comme une bulle de savon qui grossit
 function inflateChat(panel) {
-  const fab = $("#chatFab").getBoundingClientRect(), p = panel.getBoundingClientRect();
-  const dx = fab.left + fab.width / 2 - p.right, dy = fab.top + fab.height / 2 - p.bottom;
+  const fab = $("#chatFab").getBoundingClientRect(), p = panel.getBoundingClientRect(), o = chatOrigin(p);
+  const dx = fab.left + fab.width / 2 - o.x, dy = fab.top + fab.height / 2 - o.y;
   panel.animate([
     {transform: `translate(${dx}px,${dy}px) scale(.12)`, borderRadius: "50%", opacity: .2, filter: "blur(4px)"},
     {transform: "translate(0,0) scale(1.04,.97)", borderRadius: "28px", opacity: 1, filter: "blur(0)", offset: .65},
@@ -3744,8 +3795,8 @@ function closeChat() {
   fab.setAttribute("aria-expanded", "false");
   if (reducedMotion() || panel.hidden) { panel.hidden = true; return; }
   // Fermeture : la fenêtre rentre dans la bulle, puis la bulle éclate et se reforme
-  const f = fab.getBoundingClientRect(), p = panel.getBoundingClientRect();
-  const dx = f.left + f.width / 2 - p.right, dy = f.top + f.height / 2 - p.bottom;
+  const f = fab.getBoundingClientRect(), p = panel.getBoundingClientRect(), o = chatOrigin(p);
+  const dx = f.left + f.width / 2 - o.x, dy = f.top + f.height / 2 - o.y;
   const anim = chat.closeAnim = panel.animate([
     {transform: "none", borderRadius: "16px", opacity: 1},
     {transform: `translate(${dx}px,${dy}px) scale(.1)`, borderRadius: "50%", opacity: 0},
@@ -3855,7 +3906,69 @@ async function sendChat() {
   chat.msgs.push(data);
   if (chat.open && chat.peer === peer) { if (t) renderChat(); else paintChatMsgs(); }
 }
-$("#chatFab").onclick = () => chat.open ? closeChat() : openChat(chat.peer);
+// Bulle déplaçable : on la maintient et on la fait glisser où l'on veut ; la fenêtre s'ouvre ensuite à côté d'elle
+const CHAT_POS_KEY = "filmory:chatpos";
+let fabDragged = false;
+function placeFab(x, y) {
+  const fab = $("#chatFab"), w = fab.offsetWidth || 60, h = fab.offsetHeight || 60, m = 8;
+  x = Math.min(Math.max(m, x), innerWidth - w - m); y = Math.min(Math.max(m, y), innerHeight - h - m);
+  Object.assign(fab.style, {left: x + "px", top: y + "px", right: "auto", bottom: "auto"});
+  placeChatPanel();
+}
+function placeChatPanel() {
+  const fab = $("#chatFab"), s = $("#chatPanel").style;
+  if (!fab.style.left) return; // jamais déplacée : position du CSS
+  const f = fab.getBoundingClientRect(), m = 12;
+  const right = f.left + f.width / 2 > innerWidth / 2, below = f.top + f.height / 2 > innerHeight / 2;
+  s.left = s.right = s.top = s.bottom = "auto";
+  if (right) s.right = Math.max(m, innerWidth - f.right) + "px"; else s.left = Math.max(m, f.left) + "px";
+  if (below) s.bottom = innerHeight - f.top + 10 + "px"; else s.top = f.bottom + 10 + "px";
+  s.height = `min(560px, ${Math.max(260, (below ? f.top - 10 : innerHeight - f.bottom - 10) - m)}px)`;
+  s.transformOrigin = `${below ? "bottom" : "top"} ${right ? "right" : "left"}`;
+}
+// coin de la fenêtre le plus proche de la bulle (point de départ des animations)
+function chatOrigin(p) {
+  const o = $("#chatPanel").style.transformOrigin || "bottom right";
+  return {x: o.includes("left") ? p.left : p.right, y: o.includes("top") ? p.top : p.bottom};
+}
+function restoreFab() {
+  let pos; try { pos = JSON.parse(localStorage.getItem(CHAT_POS_KEY)); } catch {}
+  if (!pos) return;
+  const fab = $("#chatFab"), w = fab.offsetWidth || 60, h = fab.offsetHeight || 60;
+  placeFab(pos.fx * (innerWidth - w), pos.fy * (innerHeight - h));
+}
+(() => {
+  const fab = $("#chatFab"); let st = null;
+  fab.addEventListener("pointerdown", ev => {
+    if (ev.button) return;
+    const r = fab.getBoundingClientRect();
+    fabDragged = false;
+    st = {x: ev.clientX, y: ev.clientY, ox: r.left, oy: r.top, id: ev.pointerId, moved: false};
+  });
+  fab.addEventListener("pointermove", ev => {
+    if (!st) return;
+    const dx = ev.clientX - st.x, dy = ev.clientY - st.y;
+    if (!st.moved) { if (Math.hypot(dx, dy) < 6) return; st.moved = true; fab.setPointerCapture(st.id); fab.classList.add("dragging"); }
+    placeFab(st.ox + dx, st.oy + dy);
+  });
+  const end = () => {
+    if (!st) return;
+    if (st.moved) {
+      fabDragged = true; fab.classList.remove("dragging");
+      const r = fab.getBoundingClientRect();
+      try { localStorage.setItem(CHAT_POS_KEY, JSON.stringify({fx: r.left / Math.max(1, innerWidth - r.width), fy: r.top / Math.max(1, innerHeight - r.height)})); } catch {}
+    }
+    st = null;
+  };
+  fab.addEventListener("pointerup", end); fab.addEventListener("pointercancel", end);
+  fab.addEventListener("dblclick", () => { // double-clic : retour à sa place d'origine
+    try { localStorage.removeItem(CHAT_POS_KEY); } catch {}
+    fab.removeAttribute("style"); $("#chatPanel").removeAttribute("style");
+  });
+  addEventListener("resize", restoreFab);
+  restoreFab();
+})();
+$("#chatFab").onclick = () => { if (fabDragged) { fabDragged = false; return; } chat.open ? closeChat() : openChat(chat.peer); };
 $("#chatPanel").addEventListener("click", ev => {
   const hit = ev.target.closest("[data-chat-hit]");
   if (hit) { chat.attach = chat.hits[+hit.dataset.chatHit]; chat.picking = false; renderChat(); return; }
