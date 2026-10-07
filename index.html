@@ -777,7 +777,26 @@ dialog::backdrop{background:rgba(5,4,10,.75);backdrop-filter:blur(3px)}
 .pod .md{font-size:30px;line-height:1}
 .pod b{font-size:15px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pod small{color:var(--muted);font-size:12.5px}
-.home-quiz .podium{max-width:none}
+/* accueil : calendrier et podium du quiz côte à côte */
+.home-duo{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:28px;align-items:start;max-width:1400px;margin-inline:auto}
+.home-duo .cal{max-width:none;margin:0}
+.home-duo .cal-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.home-quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 16px 18px;margin-top:38px}
+.home-quiz .sec-title{margin:16px 0 0;font-size:19px}
+.hq-month{font-size:13px;font-weight:700;color:var(--muted);text-transform:capitalize;margin:2px 0 14px}
+.podium3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));align-items:end;gap:6px}
+.pd{display:grid;justify-items:center;gap:8px;min-width:0}
+.pd-who{display:grid;justify-items:center;gap:3px;text-align:center;min-width:0;max-width:100%}
+.pd-who .bb-av{width:44px;height:44px;font-size:15px}
+.pd1 .pd-who .bb-av{width:56px;height:56px;box-shadow:0 0 0 3px var(--star)}
+.pd-who b{font-size:13.5px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pd-who small{font-size:12px;color:var(--muted)}
+.pd-who small b{font-size:13px;color:var(--fg)}
+.pd-step{width:100%;border-radius:8px 8px 0 0;display:grid;place-items:start center;padding-top:8px;font-weight:900;font-size:30px;color:#0e0e11}
+.pd1 .pd-step{height:130px;background:linear-gradient(180deg,#fcd34d,#d4a017)}
+.pd2 .pd-step{height:95px;background:linear-gradient(180deg,#e5e7eb,#9ca3af)}
+.pd3 .pd-step{height:70px;background:linear-gradient(180deg,#e7a978,#b06a3b)}
+@media (max-width:1100px){.home-duo{grid-template-columns:minmax(0,1fr)}.home-quiz{max-width:420px}}
 @media (max-width:560px){.podium{grid-template-columns:minmax(0,1fr)}}
 
 /* ---------- messagerie ---------- */
@@ -1351,11 +1370,7 @@ function viewHome() {
       </div>` : `<div class="row-empty">Aucun vote pour ${monthName()} pour l'instant. Les votes se font dans l'onglet Vote.</div>`}
     </section>` : ""}
 
-    ${auth.sb ? `<section class="cal home-quiz" aria-labelledby="podT">
-      <h2 class="sec-title" id="podT">${ICON.trophy} Champions du quiz <span class="muted" style="font-weight:700;font-size:15px;text-transform:capitalize">· ${monthName()}</span><a class="more" href="#quiz">Jouer au quiz</a></h2>
-      <div id="homePodium">${podiumHTML()}</div>
-    </section>` : ""}
-
+    <div class="${auth.sb ? "home-duo" : ""}">
     <section class="cal" aria-labelledby="calT">
       <h2 class="sec-title" id="calT">${ICON.cal} Calendrier des sorties</h2>
       <div class="cal-grid">${SORTIES.map(s => `
@@ -1365,6 +1380,12 @@ function viewHome() {
           ${s.series.length ? `<li class="cal-k">Séries</li>` + s.series.map(f => `<li><button data-open="${esc(f.id)}">${esc(f.title)}</button><small>${fmtDate(f.release, {day:"numeric", month:"short"})}</small></li>`).join("") : ""}</ul>
         </div>`).join("")}</div>
     </section>
+    ${auth.sb ? `<section class="home-quiz" aria-labelledby="podT">
+      <h2 class="sec-title" id="podT">${ICON.trophy} Champions du quiz <a class="more" href="#quiz">Jouer</a></h2>
+      <div class="hq-month">${monthName()}</div>
+      <div id="homePodium">${podiumHTML()}</div>
+    </section>` : ""}
+    </div>
 
     <h2 class="sec-title">${ICON.eye} Vus récemment ${recent.length ? `<a class="more" href="#journal">Voir le journal</a>` : ""}</h2>
     ${recent.length ? `<div class="row">${recent.map(x => cardHTML(x.f, fmtDate(x.e.date,{day:"numeric",month:"short"}))).join("")}</div>`
@@ -3311,8 +3332,14 @@ async function loadBoard(force) {
 function podiumHTML() {
   if (!quiz.board.at) { loadBoard(); return `<p class="muted">Chargement du classement…</p>`; }
   const top = quiz.board.month.slice(0, 3);
-  if (!top.length) return `<div class="row-empty">Personne n'a encore joué ce mois-ci. <a class="btn small primary" href="#quiz">Lancer le premier quiz</a></div>`;
-  return `<div class="podium">${top.map((r, i) => `<div class="pod p${i + 1}"><span class="md" aria-label="${i + 1}${i ? "e" : "er"}">${MEDALS[i]}</span>${avHTML(r.user_id, r.name)}<b>${esc(r.name || "Cinéphile")}</b>${quizBadge(r.points)}<small><b class="num">${r.month_points}</b> pts · ${r.month_passed} quiz réussi${r.month_passed > 1 ? "s" : ""}</small></div>`).join("")}</div>`;
+  // ordre d'un vrai podium : 2e à gauche, 1er au centre (plus haut), 3e à droite
+  const spot = i => { const r = top[i];
+    return `<div class="pd pd${i + 1}">
+      <div class="pd-who">${r ? `${avHTML(r.user_id, r.name)}<b>${esc(r.name || "Cinéphile")}</b><small><b class="num">${r.month_points}</b> pts</small>` : `<span class="bb-av">?</span><small>Place libre</small>`}</div>
+      <div class="pd-step" aria-label="${i + 1}${i ? "e" : "er"} place"><span>${i + 1}</span></div>
+    </div>`; };
+  return `<div class="podium3">${spot(1)}${spot(0)}${spot(2)}</div>
+    ${top.length ? "" : `<p class="note" style="text-align:center;margin:10px 0 0">Personne n'a encore joué ce mois-ci. <a href="#quiz" style="color:var(--fg)">Lancez le premier quiz</a> !</p>`}`;
 }
 function boardHTML() {
   const monthly = quiz.tab === "month", rows = monthly ? quiz.board.month : quiz.board.all;
