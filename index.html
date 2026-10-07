@@ -401,6 +401,33 @@ button.bb-av{border:0;color:inherit;cursor:pointer}
 .day li.cal-it .cal-tx{min-width:0;display:grid}
 .day li.cal-it .cal-tx button{text-align:left}
 .day li.cal-it small{display:block}
+/* calendrier « Vu le » : même verre que la bulle de messagerie */
+.dp-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-weight:800;white-space:nowrap}
+.dp-btn svg{width:16px;height:16px;opacity:.8}
+.dp-btn.empty{color:rgba(255,255,255,.55)!important;font-weight:700}
+.dp{position:fixed;z-index:60;width:292px;padding:14px 14px 12px;border-radius:24px;color:#fff;transform-origin:top center;
+  background:radial-gradient(circle at 18% 8%,rgba(255,255,255,.32) 0 4%,rgba(255,255,255,.08) 14%,transparent 30%),radial-gradient(circle at 85% 95%,rgba(255,255,255,.12),transparent 40%),radial-gradient(ellipse at 50% 50%,rgba(16,18,26,.86) 55%,rgba(60,80,110,.8) 88%,rgba(150,190,240,.7) 100%);
+  -webkit-backdrop-filter:blur(14px) saturate(1.6);backdrop-filter:blur(14px) saturate(1.6);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),inset 0 -10px 24px rgba(120,190,255,.18),inset 6px 4px 18px rgba(255,170,230,.14),0 18px 50px rgba(0,0,0,.6)}
+.dp::after{content:"";position:absolute;left:24%;top:1.6%;width:20%;height:2.6%;border-radius:50%;background:rgba(255,255,255,.6);transform:rotate(-18deg);filter:blur(.8px);pointer-events:none}
+.dp-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dp-head b{font-size:15px;font-weight:900;text-transform:capitalize;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.dp-nav{width:32px;height:32px;border-radius:50%;border:0;color:#fff;font-size:16px;font-weight:900;cursor:pointer;display:grid;place-items:center;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.45) 0 10%,transparent 40%),rgba(255,255,255,.08);box-shadow:inset 0 0 0 1px rgba(255,255,255,.3);transition:transform .15s}
+.dp-nav:hover:not(:disabled){transform:scale(1.1)}
+.dp-nav:disabled{opacity:.3;cursor:default}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.dp-wd{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);padding:4px 0}
+.dp-d{aspect-ratio:1;border:0;border-radius:50%;background:none;color:#fff;font-size:13.5px;font-weight:800;cursor:pointer;position:relative;transition:transform .15s,background .15s}
+.dp-d:hover:not(:disabled){background:rgba(255,255,255,.12);transform:scale(1.08)}
+.dp-d.out{color:rgba(255,255,255,.35)}
+.dp-d:disabled{color:rgba(255,255,255,.18);cursor:default}
+.dp-d.today{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.55)}
+.dp-d.sel{background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.7) 0 9%,rgba(255,255,255,.18) 22%,transparent 45%),radial-gradient(circle at 50% 50%,rgba(140,200,255,.35) 50%,rgba(255,170,230,.45) 100%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.55),0 4px 14px rgba(120,190,255,.35);text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.dp-foot{display:flex;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.14)}
+.dp-foot button{background:none;border:0;color:#fff;font-weight:800;font-size:13px;padding:6px 10px;border-radius:999px;cursor:pointer}
+.dp-foot button:hover{background:rgba(255,255,255,.12)}
 /* bulle de messagerie déplaçable */
 .chat-fab{touch-action:none;cursor:grab}
 .chat-fab.dragging{animation:none;transform:scale(1.12);cursor:grabbing;transition:none}
@@ -2486,6 +2513,75 @@ function starInput(value, onSet) {
   sync(); return el;
 }
 
+/* ===================== Calendrier (bulle de verre) ===================== */
+// Remplace le calendrier natif du navigateur. Valeur au format AAAA-MM-JJ dans btn.dataset.value.
+let dpOpen = null;
+function datePicker(btn, {max = "", onChange}) {
+  const label = () => { const v = btn.dataset.value;
+    btn.classList.toggle("empty", !v);
+    btn.innerHTML = `${ICON.cal}<span>${v ? fmtDate(v, {day: "numeric", month: "short", year: "numeric"}) : "Choisir"}</span>`; };
+  label();
+  btn.onclick = ev => { ev.stopPropagation(); dpOpen?.btn === btn ? closeDatePicker() : openDatePicker(btn, max, v => { btn.dataset.value = v; label(); onChange(v); }); };
+}
+function openDatePicker(btn, max, set) {
+  closeDatePicker(true);
+  const host = btn.closest("dialog") || document.body; // dans une fenêtre modale, le calendrier doit être dedans pour passer au-dessus
+  const el = document.createElement("div");
+  el.className = "dp"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "Choisir une date");
+  const sel = btn.dataset.value, base = new Date((sel || max || today()) + "T12:00:00");
+  const st = {y: base.getFullYear(), m: base.getMonth()};
+  const iso = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
+  const render = () => {
+    const first = new Date(st.y, st.m, 1), shift = (first.getDay() + 6) % 7; // semaine du lundi au dimanche
+    const days = Array.from({length: 42}, (_, i) => { const d = new Date(st.y, st.m, 1 - shift + i); return {d, v: iso(d.getFullYear(), d.getMonth(), d.getDate()), out: d.getMonth() !== st.m}; });
+    const nextOff = max && iso(st.m === 11 ? st.y + 1 : st.y, (st.m + 1) % 12, 1).slice(0, 7) > max.slice(0, 7);
+    el.innerHTML = `<div class="dp-head"><button type="button" class="dp-nav" data-dp="-1" aria-label="Mois précédent">‹</button>
+        <b>${first.toLocaleDateString("fr-FR", {month: "long", year: "numeric"})}</b>
+        <button type="button" class="dp-nav" data-dp="1" aria-label="Mois suivant" ${nextOff ? "disabled" : ""}>›</button></div>
+      <div class="dp-grid">${["lu", "ma", "me", "je", "ve", "sa", "di"].map(w => `<span class="dp-wd">${w}</span>`).join("")}
+        ${days.map(x => `<button type="button" class="dp-d ${x.out ? "out" : ""} ${x.v === today() ? "today" : ""} ${x.v === sel ? "sel" : ""}" data-day="${x.v}" ${max && x.v > max ? "disabled" : ""} aria-label="${x.d.toLocaleDateString("fr-FR", {weekday: "long", day: "numeric", month: "long", year: "numeric"})}" ${x.v === sel ? 'aria-pressed="true"' : ""}>${x.d.getDate()}</button>`).join("")}</div>
+      <div class="dp-foot"><button type="button" data-dp="clear">Effacer</button><button type="button" data-dp="today">Aujourd'hui</button></div>`;
+  };
+  el.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const n = ev.target.closest("[data-dp]"), d = ev.target.closest("[data-day]");
+    if (d) { set(d.dataset.day); closeDatePicker(); return; }
+    if (!n) return;
+    const a = n.dataset.dp;
+    if (a === "clear") { set(""); closeDatePicker(); return; }
+    if (a === "today") { set(today()); closeDatePicker(); return; }
+    st.m += +a; if (st.m < 0) { st.m = 11; st.y--; } else if (st.m > 11) { st.m = 0; st.y++; }
+    render();
+  });
+  el.addEventListener("keydown", ev => { if (ev.key === "Escape") { ev.preventDefault(); ev.stopPropagation(); closeDatePicker(); btn.focus(); } });
+  render(); host.appendChild(el);
+  // sous le bouton si la place le permet, sinon au-dessus ; jamais hors de l'écran
+  const r = btn.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight, m = 10;
+  const below = r.bottom + h + m < innerHeight || r.top - h - m < 0;
+  el.style.left = Math.min(Math.max(m, r.left + r.width / 2 - w / 2), innerWidth - w - m) + "px";
+  el.style.top = (below ? r.bottom + 8 : r.top - h - 8) + "px";
+  el.style.transformOrigin = `${r.left + r.width / 2 - parseFloat(el.style.left)}px ${below ? "0" : "100%"}`;
+  if (!reducedMotion()) el.animate([
+    {transform: "scale(.15)", opacity: 0, borderRadius: "50%", filter: "blur(4px)"},
+    {transform: "scale(1.04,.97)", opacity: 1, borderRadius: "30px", filter: "blur(0)", offset: .65},
+    {transform: "scale(.99,1.01)", offset: .85},
+    {transform: "none", borderRadius: "24px"},
+  ], {duration: 460, easing: "cubic-bezier(.2,.8,.2,1)"});
+  dpOpen = {el, btn};
+  btn.setAttribute("aria-expanded", "true");
+  (el.querySelector(".dp-d.sel") || el.querySelector(".dp-d.today:not(:disabled)") || el.querySelector(".dp-nav")).focus({preventScroll: true});
+}
+function closeDatePicker(instant) {
+  if (!dpOpen) return;
+  const {el, btn} = dpOpen; dpOpen = null;
+  btn.setAttribute("aria-expanded", "false");
+  if (instant || reducedMotion()) { el.remove(); return; }
+  el.animate([{transform: "none", opacity: 1}, {transform: "scale(.2)", opacity: 0, borderRadius: "50%"}], {duration: 200, easing: "cubic-bezier(.5,0,.75,0)"}).finished.then(() => el.remove(), () => el.remove());
+}
+document.addEventListener("click", ev => { if (dpOpen && !ev.target.closest(".dp")) closeDatePicker(); });
+document.addEventListener("scroll", () => closeDatePicker(true), true);
+addEventListener("resize", () => closeDatePicker(true));
+
 /* ===================== Detail dialog ===================== */
 let curId = null, confirmDelete = false;
 const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches || pref("reduce", false);
@@ -2693,7 +2789,7 @@ function renderDetail(animate = false) {
           <div class="sl-row"><span class="sl-k">${f.t === "serie" ? "Création" : "Réalisation"}</span><div class="sl-v">${f.by.map(n => pchip(n, "d")).join("") || "—"}</div></div>
           <div class="sl-grid">
             <div class="sl-cell"><span class="sl-k">Distribution</span><div class="sl-v">${f.cast.map(n => pchip(n, "a")).join("") || "—"}</div></div>
-            <div class="sl-cell"><label class="sl-k" for="dDate">Vu le</label><input class="input sl-in" type="date" id="dDate" value="${esc(e.date || "")}" max="${today()}"></div>
+            <div class="sl-cell"><label class="sl-k" for="dDate">Vu le</label><button type="button" class="input sl-in dp-btn" id="dDate" data-value="${esc(e.date || "")}" aria-haspopup="dialog"></button></div>
             <div class="sl-cell"><span class="sl-k">Note</span><div class="sl-note">${e.rating ? `<span class="stars-s">${starsText(e.rating)}</span>` : "—"}${e.liked ? ` <span class="ic-heart">♥</span>` : ""}${e.disliked ? ` <span class="ic-dis">✕</span>` : ""}</div></div>
           </div>
           ${f.t === "serie" ? (() => { const si = seriesInfo(f), n = e.eps != null ? Math.min(e.eps, si.eps) : (e.watched ? si.eps : 0); return `<div class="sl-row"><label class="sl-k" for="dEps">Épisodes vus</label><input class="input sl-in" type="number" id="dEps" min="0" max="${si.eps}" value="${n}" style="max-width:110px"><span class="sl-v">sur ${si.eps}${si.est ? " (estimation)" : ""} · environ ${Math.round(n * si.m / 60)} h de visionnage</span></div>`; })() : ""}
@@ -2730,7 +2826,7 @@ function renderDetail(animate = false) {
     if (n > 0) { en.watched = true; en.date ||= today(); en.watchlist = false; }
     prune(f.id); save("lib"); refreshDetailBits(); renderAll();
   });
-  $("#dDate").onchange = ev => { const en = ensure(f.id); en.date = ev.target.value; if (en.date) en.watched = true; save("lib"); refreshDetailBits(); renderAll(); };
+  datePicker($("#dDate"), {max: today(), onChange: v => { const en = ensure(f.id); en.date = v; if (en.date) en.watched = true; save("lib"); refreshDetailBits(); renderAll(); }});
 }
 function refreshDetailBits() {
   const draft = $("#dReview")?.value, sp = $("#dSpoil")?.checked;
