@@ -3029,11 +3029,20 @@ const sbUser = {
   },
 };
 
+// « Rester connecté » : la session est gardée dans le navigateur (localStorage) et renouvelée automatiquement ;
+// décoché, elle ne dure que le temps de l'onglet (sessionStorage).
+const REMEMBER_KEY = "filmory:remember", EMAIL_KEY = "filmory:email";
+const remembered = () => { try { return localStorage.getItem(REMEMBER_KEY) !== "0"; } catch { return true; } };
+const authStore = {
+  getItem: k => { try { return localStorage.getItem(k) ?? sessionStorage.getItem(k); } catch { return null; } },
+  setItem: (k, v) => { try { if (remembered()) { localStorage.setItem(k, v); sessionStorage.removeItem(k); } else { sessionStorage.setItem(k, v); localStorage.removeItem(k); } } catch {} },
+  removeItem: k => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch {} },
+};
 async function initAuth() {
   try {
     const cfg = await fetch("/api/config").then(r => r.ok ? r.json() : {}).catch(() => ({}));
     if (!cfg.url || !cfg.anonKey || !window.supabase) return;
-    auth.sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+    auth.sb = window.supabase.createClient(cfg.url, cfg.anonKey, {auth: {persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storage: authStore}});
     const {data} = await auth.sb.auth.getSession();
     if (data.session) await startSession(data.session.user);
     auth.sb.auth.onAuthStateChange(ev => { if (ev === "SIGNED_OUT" && auth.user) location.reload(); });
@@ -3060,18 +3069,22 @@ function openAuth(mode = authMode) {
     <h2 style="font-size:28px">${login ? "Se connecter" : "Créer un compte"}</h2>
     <p class="muted" style="margin:-8px 0 0;font-weight:600">${login ? "Retrouvez votre journal, vos notes et vos amis sur tous vos appareils." : "Ce que vous avez déjà noté sur cet appareil sera ajouté à votre nouveau compte."}</p>
     <form id="authForm" class="form-grid" style="grid-template-columns:minmax(0,1fr)">
-      <label class="lbl">Adresse e-mail<input class="input" id="auEmail" type="email" required autocomplete="email"></label>
-      <label class="lbl">Mot de passe<input class="input" id="auPass" type="password" required minlength="6" autocomplete="${login ? "current-password" : "new-password"}" placeholder="6 caractères minimum"></label>
+      <label class="lbl">Adresse e-mail<input class="input" id="auEmail" name="email" type="email" required autocomplete="username"></label>
+      <label class="lbl">Mot de passe<input class="input" id="auPass" name="password" type="password" required minlength="6" autocomplete="${login ? "current-password" : "new-password"}" placeholder="6 caractères minimum"></label>
+      <label class="check"><input type="checkbox" id="auRemember" ${remembered() ? "checked" : ""}> Rester connecté sur cet appareil</label>
       <p class="note" id="auMsg" role="status" style="margin:0"></p>
       <button class="btn primary" type="submit" id="auGo" style="justify-content:center">${login ? "Se connecter" : "Créer mon compte"}</button>
       <button class="btn ghost" type="button" data-auth-mode="${login ? "signup" : "login"}" style="justify-content:center">${login ? "Pas encore de compte ? Créer un compte" : "Déjà un compte ? Se connecter"}</button>
     </form>`;
   const dlg = $("#dlgAuth"); if (!dlg.open) dlg.showModal();
-  $("#auEmail").focus();
+  // on pré-remplit la dernière adresse utilisée
+  let lastEmail = ""; try { lastEmail = localStorage.getItem(EMAIL_KEY) || ""; } catch {}
+  if (login && lastEmail) { $("#auEmail").value = lastEmail; $("#auPass").focus(); } else $("#auEmail").focus();
   $("[data-auth-mode]").onclick = ev => openAuth(ev.target.dataset.authMode);
   $("#authForm").onsubmit = async ev => {
     ev.preventDefault();
     const email = $("#auEmail").value.trim(), password = $("#auPass").value, msg = $("#auMsg"), go = $("#auGo");
+    try { localStorage.setItem(REMEMBER_KEY, $("#auRemember").checked ? "1" : "0"); localStorage.setItem(EMAIL_KEY, email); } catch {}
     go.disabled = true; msg.textContent = "Un instant…";
     try {
       const {data, error} = login
@@ -3079,6 +3092,8 @@ function openAuth(mode = authMode) {
         : await auth.sb.auth.signUp({email, password, options: {emailRedirectTo: location.origin}});
       if (error) throw error;
       if (!data.session) { msg.textContent = "Compte créé. Ouvrez l'e-mail de confirmation que vous venez de recevoir, puis revenez vous connecter."; go.disabled = false; return; }
+      // propose au gestionnaire de mots de passe du navigateur (Chrome, Edge…) d'enregistrer les identifiants
+      if (window.PasswordCredential) navigator.credentials.store(new PasswordCredential({id: email, password, name: email})).catch(() => {});
       dlg.close(); await startSession(data.session.user); toast(login ? "Connecté" : "Compte créé, bienvenue !"); renderAll();
     } catch (e) {
       const m = String(e?.message || "");
